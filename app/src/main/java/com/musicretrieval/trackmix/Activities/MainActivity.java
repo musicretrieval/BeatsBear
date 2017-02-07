@@ -14,10 +14,10 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.main_walk_button)   Button mWalkButton;
-    @BindView(R.id.main_jog_button)    Button mJogButton;
-    @BindView(R.id.main_run_button)    Button mRunButton;
-    @BindView(R.id.main_sprint_button) Button mSprintButton;
+    @BindView(R.id.main_walk_button)   Button walkButton;
+    @BindView(R.id.main_jog_button)    Button jogButton;
+    @BindView(R.id.main_run_button)    Button runButton;
+    @BindView(R.id.main_sprint_button) Button sprintButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.main_walk_button)
-    public void StartWalk() {
+    public void startWalk() {
         Toast.makeText(this, "start walking", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         intent.putExtra("SONG_LIST_BPM", new int[] {90, 137});
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.main_jog_button)
-    public void StartJog() {
+    public void startJog() {
         Toast.makeText(this, "start jogging", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         intent.putExtra("SONG_LIST_BPM", new int[] {137, 147});
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.main_run_button)
-    public void StartRun() {
+    public void startRun() {
         Toast.makeText(this, "start run", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         intent.putExtra("SONG_LIST_BPM", new int[] {147, 160});
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.main_sprint_button)
-    public void StartSprint() {
+    public void startSprint() {
         Toast.makeText(this, "start sprint", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         intent.putExtra("SONG_LIST_BPM", new int[] {160, 250});

@@ -2,18 +2,38 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp">
 
-    <ImageView
+    <com.musicretrieval.trackmix.Utils.CircularTextView
+        android:text="bpm"
         android:layout_height="wrap_content"
-        app:srcCompat="@mipmap/ic_launcher"
         android:id="@+id/playlistitem_bpm"
-        android:layout_width="64dp" />
+        android:layout_width="64dp"
+        android:gravity="center"
+        android:padding="8dp" />
 
-    <TextView
-        android:text="songname"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/playlistitem_songname"
-        android:layout_weight="1"/>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="16dp">
+
+        <TextView
+            android:text="songname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/playlistitem_songname"
+            android:layout_weight="1"
+            android:gravity="bottom" />
+
+        <TextView
+            android:text="artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/playlistitem_artist"
+            android:layout_weight="1"
+            android:gravity="top" />
+    </LinearLayout>
+
 </LinearLayout>
