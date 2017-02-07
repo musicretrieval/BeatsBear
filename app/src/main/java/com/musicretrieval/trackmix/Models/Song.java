@@ -10,33 +10,38 @@ package com.musicretrieval.trackmix.Models;
  * </ul>
  */
 public class Song {
-    public static final int MINIMUM_BPM = 60;
-    public static final int MAXIMUM_BPM = 400;
-
-    private String name;
+    private long id;
+    private String title;
     private String artist;
+    private String album;
+    private long duration;
     private int bpm;
 
     /**
      * Song constructor
-     * @param name name of the song
+     * @param id id of the song
+     * @param title title of the song
      * @param artist artist of the song
+     * @param album album of the song
+     * @param duration duration of the song in seconds
      * @param bpm beats per minute of the song
      */
-    public Song(String name, String artist, int bpm) {
-        this.name = name;
+    public Song(long id, String title, String artist, String album, long duration, int bpm) {
+        this.id = id;
+        this.title = title;
         this.artist = artist;
+        this.album = album;
+        this.duration = duration;
         this.bpm = bpm;
     }
 
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
+    public long getId() { return id; }
+    public String getTitle() {
+        return title;
     }
     public String getArtist() { return artist; }
-    public void setArtist(String artist) { this.artist = artist; }
+    public String getAlbum() { return album; }
+    public long getDuration() { return duration; }
     public int getBpm() { return bpm; }
     public void setBpm(int bpm) { this.bpm = bpm; }
 }

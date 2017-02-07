@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_song_list"
     android:layout_width="match_parent"
@@ -8,35 +9,68 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.musicretrieval.trackmix.Activities.Playlist"
-    android:orientation="vertical">
+    tools:context="com.musicretrieval.trackmix.Activities.Playlist">
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@android:drawable/ic_media_play"
+        android:id="@+id/playlist_play"
+        android:layout_gravity="bottom|end"
+        android:tint="@android:color/white"
+        android:layout_margin="8dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@android:drawable/ic_input_add"
+        android:id="@+id/playlist_add"
+        android:layout_gravity="bottom|end"
+        android:tint="@android:color/white"
+        android:layout_marginBottom="56dp"
+        android:layout_marginEnd="8dp" />
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:text="BPM"
-            android:layout_width="64dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/playlist_bpm_title"
-            android:layout_weight="0"
-            android:textAlignment="center" />
-
-        <TextView
-            android:text="Song"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/playlist_song_title"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
-
-    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/playlist"
-        tools:listitem="@layout/playlistitem" />
-</LinearLayout>
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:text="BPM"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/playlist_bpm_title"
+                android:layout_weight="0"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textSize="18sp" />
+
+            <TextView
+                android:text="Song"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/playlist_song_title"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/playlist"
+            tools:listitem="@layout/playlistitem" />
+
+    </LinearLayout>
+
+</FrameLayout>

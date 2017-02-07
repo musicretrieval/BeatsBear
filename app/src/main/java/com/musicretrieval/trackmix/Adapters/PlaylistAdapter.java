@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +74,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         }
 
         public void bindMetaData(Song song) {
-            songName.setText(song.getName());
+            songName.setText(song.getTitle());
             songArtist.setText(song.getArtist());
 
             songBpm.setText(String.valueOf(song.getBpm()));

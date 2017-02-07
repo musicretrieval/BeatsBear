@@ -5,5 +5,5 @@
     <string name="main_run">Run</string>
     <string name="main_sprint">Sprint</string>
 
-    <string name="songlist_activity_title">Song List</string>
+    <string name="songlist_activity_title">Playlist</string>
 </resources>
