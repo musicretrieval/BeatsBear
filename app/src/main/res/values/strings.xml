@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">TrackMix</string>
+    <string name="main_walk">Walk</string>
+    <string name="main_jog">Jog</string>
+    <string name="main_run">Run</string>
+    <string name="main_sprint">Sprint</string>
+
+    <string name="songlist_activity_title">Song List</string>
+</resources>
