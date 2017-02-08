@@ -1,6 +1,7 @@
 package com.musicretrieval.trackmix.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.musicretrieval.trackmix.Activities.Play;
 import com.musicretrieval.trackmix.Models.Song;
 import com.musicretrieval.trackmix.R;
 import com.musicretrieval.trackmix.Utils.CircularTextView;
@@ -54,7 +56,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         return context;
     }
 
-    public static class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @BindView(R.id.playlistitem_songname)
         TextView songName;
         @BindView(R.id.playlistitem_artist)
@@ -70,7 +72,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
         @Override
         public void onClick(View view) {
-            Toast.makeText(view.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(view.getContext(), Play.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+            intent.putExtra("PLAY_SONG", songs.get(getAdapterPosition()).getPath());
+            view.getContext().startActivity(intent);
         }
 
         public void bindMetaData(Song song) {
