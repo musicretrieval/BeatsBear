@@ -4,13 +4,93 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    tools:context="com.musicretrieval.trackmix.Activities.Play">
+    android:orientation="vertical"
+    tools:context="com.musicretrieval.trackmix.Activities.Play"
+    android:layout_margin="8dp">
 
     <TextView
-        android:text="test"
+        android:text="title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/play_test"
-        android:layout_weight="1" />
+        android:id="@+id/play_song_title"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@mipmap/ic_launcher"
+        android:id="@+id/play_song_image"
+        android:layout_weight="1.00" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_height="wrap_content"
+            android:id="@+id/play_decrease_tempo_btn"
+            android:layout_weight="0"
+            android:background="@drawable/ic_remove_black_24px"
+            android:gravity="center"
+            android:layout_width="wrap_content" />
+
+        <TextView
+            android:text="BPM"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_tempo"
+            android:layout_weight="1"
+            android:gravity="center" />
+
+        <Button
+            android:layout_height="wrap_content"
+            android:id="@+id/play_increase_tempo_btn"
+            android:layout_weight="0"
+            android:background="@drawable/ic_add_black_24px"
+            android:gravity="center"
+            android:layout_width="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_shuffle_btn"
+            android:layout_weight="1"
+            android:background="@drawable/ic_shuffle_black_24px" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_rewind_btn"
+            android:layout_weight="1"
+            android:background="@drawable/ic_fast_rewind_black_24px" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_play_btn"
+            android:layout_weight="1"
+            android:background="@drawable/ic_play_arrow_black_24px" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_forward_btn"
+            android:layout_weight="1"
+            android:background="@drawable/ic_fast_forward_black_24px" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_repeat_btn"
+            android:layout_weight="1"
+            android:background="@drawable/ic_repeat_black_24px" />
+    </LinearLayout>
+
 </LinearLayout>

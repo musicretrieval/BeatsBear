@@ -36,6 +36,7 @@ public class Play extends AppCompatActivity {
         setContentView(R.layout.activity_play);
         ButterKnife.bind(this);
 
+        //TODO: Serialize song data, so that we can have a list of songs, not just paths
         songs = getIntent().getStringArrayListExtra("PLAY_PLAYLIST");
 
         play(songs.get(0));
@@ -55,13 +56,13 @@ public class Play extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        TextView tv = (TextView) findViewById(R.id.play_test);
+                        TextView tv = (TextView) findViewById(R.id.play_tempo);
                         tv.setText("" + pitchInHz);
                     }
                 });
             }
         };
-
+        
         AudioProcessor p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, sampleRate, bufferSize, pdh);
         dispatcher.addAudioProcessor(p);
         dispatcher.addAudioProcessor(new AndroidAudioPlayer(dispatcher.getFormat(),5000, AudioManager.STREAM_MUSIC));
