@@ -82,7 +82,7 @@ public class Playlist extends AppCompatActivity {
 
     @OnClick(R.id.playlist_add)
     public void AddSong() {
-        
+
     }
 
     /**
