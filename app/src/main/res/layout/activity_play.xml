@@ -7,4 +7,10 @@
     android:orientation="horizontal"
     tools:context="com.musicretrieval.trackmix.Activities.Play">
 
+    <TextView
+        android:text="test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/play_test"
+        android:layout_weight="1" />
 </LinearLayout>

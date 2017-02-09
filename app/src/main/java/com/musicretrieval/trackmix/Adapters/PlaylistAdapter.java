@@ -74,7 +74,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         public void onClick(View view) {
             Intent intent = new Intent(view.getContext(), Play.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            intent.putExtra("PLAY_SONG", songs.get(getAdapterPosition()).getPath());
+            intent.putExtra("PLAY_SONG", songs.get(getAdapterPosition()).getData());
             view.getContext().startActivity(intent);
         }
 

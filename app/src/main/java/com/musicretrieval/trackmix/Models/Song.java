@@ -14,7 +14,7 @@ public class Song {
     public static final int MAXIMUM_BPM = 300;
 
     private long id;
-    private String path;
+    private String data;
     private String title;
     private String artist;
     private String album;
@@ -24,16 +24,16 @@ public class Song {
     /**
      * Song constructor
      * @param id id of the song
-     * @param path path of the song
+     * @param data path of the song
      * @param title title of the song
      * @param artist artist of the song
      * @param album album of the song
      * @param duration duration of the song in seconds
      * @param bpm beats per minute of the song
      */
-    public Song(long id, String path, String title, String artist, String album, long duration, int bpm) {
+    public Song(long id, String data, String title, String artist, String album, long duration, int bpm) {
         this.id = id;
-        this.path = path;
+        this.data = data;
         this.title = title;
         this.artist = artist;
         this.album = album;
@@ -42,7 +42,7 @@ public class Song {
     }
 
     public long getId() { return id; }
-    public String getPath() { return path; }
+    public String getData() { return data; }
     public String getTitle() {
         return title;
     }

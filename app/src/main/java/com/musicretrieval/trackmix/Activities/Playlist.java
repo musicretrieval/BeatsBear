@@ -73,7 +73,7 @@ public class Playlist extends AppCompatActivity {
     @OnClick(R.id.playlist_play)
     public void Play() {
         ArrayList<String> paths = new ArrayList<>();
-        for (int i = 0; i < songs.size(); i++) paths.add(songs.get(i).getPath());
+        for (int i = 0; i < songs.size(); i++) paths.add(songs.get(i).getData());
         Intent intent = new Intent(this, Play.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
         intent.putStringArrayListExtra("PLAY_PLAYLIST", paths);
@@ -118,16 +118,16 @@ public class Playlist extends AppCompatActivity {
             int songDataColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
 
             do {
-                String path = musicCursor.getString(songDataColumn);
+                String data = musicCursor.getString(songDataColumn);
                 long thisId = musicCursor.getLong(idColumn);
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 int thisDuration = musicCursor.getInt(songDurationColumn);
-                int thisBpm = getBpm(path);
+                int thisBpm = getBpm(data);
 
                 //if (thisBpm > lowBpm && thisBpm < highBpm) {
-                    songs.add(new Song(thisId, path, thisTitle, thisArtist, thisAlbum, thisDuration, thisBpm));
+                    songs.add(new Song(thisId, data, thisTitle, thisArtist, thisAlbum, thisDuration, thisBpm));
                 //}
             } while (musicCursor.moveToNext());
 
