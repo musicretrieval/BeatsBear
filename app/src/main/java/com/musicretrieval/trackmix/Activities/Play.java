@@ -2,33 +2,55 @@ package com.musicretrieval.trackmix.Activities;
 
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.musicretrieval.trackmix.Models.Song;
 import com.musicretrieval.trackmix.R;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.GainProcessor;
+import be.tarsos.dsp.WaveformSimilarityBasedOverlapAdd;
 import be.tarsos.dsp.io.android.AndroidAudioPlayer;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.pitch.PitchDetectionHandler;
-import be.tarsos.dsp.pitch.PitchDetectionResult;
-import be.tarsos.dsp.pitch.PitchProcessor;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class Play extends AppCompatActivity {
 
     private final String TAG = "PLAY";
-    private ArrayList<String> songs;
+    private ArrayList<Song> songs;
+
+    private AudioDispatcher dispatcher;
+    private WaveformSimilarityBasedOverlapAdd wsola;
+    private GainProcessor gain;
+    private AndroidAudioPlayer audioPlayer;
+
+    private double tempo = 1.0;
+    private final int SAMPLE_RATE = 44100;
+
+    private final int SEQUENCE_MODEL = 82;
+    private final int WINDOW_MODEL   = 28;
+    private final int OVERLAP_MODEL  = 12;
+
+    @BindView(R.id.play_increase_tempo_btn)
+    Button increaseTempo;
+    @BindView(R.id.play_decrease_tempo_btn)
+    Button decreaseTempo;
+    @BindView(R.id.play_tempo)
+    TextView songTempo;
+    @BindView(R.id.play_song_title)
+    TextView songTitle;
+    @BindView(R.id.play_song_image)
+    ImageView songImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,38 +58,48 @@ public class Play extends AppCompatActivity {
         setContentView(R.layout.activity_play);
         ButterKnife.bind(this);
 
-        //TODO: Serialize song data, so that we can have a list of songs, not just paths
-        songs = getIntent().getStringArrayListExtra("PLAY_PLAYLIST");
+        songs = (ArrayList<Song>)getIntent().getSerializableExtra("PLAY_PLAYLIST");
 
         play(songs.get(0));
     }
 
-    public void play(String song) {
-        final String s = song;
-        final int sampleRate = 44100;
-        final int bufferSize = 4096;
+    public void play(Song song) {
+        songTitle.setText(song.getTitle());
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        songTempo.setText(tempoString);
+
         new AndroidFFMPEGLocator(this);
-        AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(song, sampleRate, bufferSize, 0);
+        try {
+            wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
+            gain = new GainProcessor(1.0);
 
-        PitchDetectionHandler pdh = new PitchDetectionHandler() {
-            @Override
-            public void handlePitch(PitchDetectionResult pitchDetectionResult, AudioEvent audioEvent) {
-                final float pitchInHz = pitchDetectionResult.getPitch();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView tv = (TextView) findViewById(R.id.play_tempo);
-                        tv.setText("" + pitchInHz);
-                    }
-                });
-            }
-        };
+            dispatcher = AudioDispatcherFactory.fromPipe(song.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
+            audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
+            wsola.setDispatcher(dispatcher);
 
-        AudioProcessor p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, sampleRate, bufferSize, pdh);
-        dispatcher.addAudioProcessor(p);
-        dispatcher.addAudioProcessor(new AndroidAudioPlayer(dispatcher.getFormat(),5000, AudioManager.STREAM_MUSIC));
+            dispatcher.addAudioProcessor(wsola);
+            dispatcher.addAudioProcessor(audioPlayer);
 
-        new Thread(dispatcher, "Audio Dispatcher").start();
+            new Thread(dispatcher, "Audio Dispatcher").start();
+        } catch (Exception ex) {
+            Log.d(TAG, ex.getMessage());
+        }
+    }
+
+    @OnClick(R.id.play_increase_tempo_btn)
+    public void increaseTempo() {
+        tempo += 0.05;
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        songTempo.setText(tempoString);
+    }
+
+    @OnClick(R.id.play_decrease_tempo_btn)
+    public void decreaseTempo() {
+        tempo -= 0.05;
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        songTempo.setText(tempoString);
     }
 
 }

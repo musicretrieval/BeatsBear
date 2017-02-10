@@ -74,10 +74,17 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         public void onClick(View view) {
             Intent intent = new Intent(view.getContext(), Play.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            intent.putExtra("PLAY_SONG", songs.get(getAdapterPosition()).getData());
+            Song song = songs.get(getAdapterPosition());
+            songs.remove(song);
+            songs.add(0, song);
+            intent.putExtra("PLAY_PLAYLIST", songs);
             view.getContext().startActivity(intent);
         }
 
+        /**
+         * Sets the title, artist, and bpm of the song to the UI
+         * @param song the input song
+         */
         public void bindMetaData(Song song) {
             songName.setText(song.getTitle());
             songArtist.setText(song.getArtist());

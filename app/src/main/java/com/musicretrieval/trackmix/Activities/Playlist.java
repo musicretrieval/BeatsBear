@@ -72,11 +72,9 @@ public class Playlist extends AppCompatActivity {
 
     @OnClick(R.id.playlist_play)
     public void Play() {
-        ArrayList<String> paths = new ArrayList<>();
-        for (int i = 0; i < songs.size(); i++) paths.add(songs.get(i).getData());
         Intent intent = new Intent(this, Play.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        intent.putStringArrayListExtra("PLAY_PLAYLIST", paths);
+        intent.putExtra("PLAY_PLAYLIST", songs);
         startActivity(intent);
     }
 
@@ -93,21 +91,12 @@ public class Playlist extends AppCompatActivity {
      */
     private void recommendSongs(int lowBpm, int highBpm) {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.YEAR,
-                MediaStore.Audio.Media.DURATION
-        };
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
 
         ContentResolver musicResolver = this.getContentResolver();
 
-        Cursor musicCursor = musicResolver.query(uri, projection, selection, null, sortOrder);
+        Cursor musicCursor = musicResolver.query(uri, null, selection, null, sortOrder);
 
         if ((musicCursor != null && musicCursor.moveToFirst())) {
             int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
@@ -132,6 +121,8 @@ public class Playlist extends AppCompatActivity {
             } while (musicCursor.moveToNext());
 
         }
+
+        musicCursor.close();
     }
 
     /**

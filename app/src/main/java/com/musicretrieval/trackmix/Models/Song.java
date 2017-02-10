@@ -1,5 +1,7 @@
 package com.musicretrieval.trackmix.Models;
 
+import java.io.Serializable;
+
 /**
  * Song is the base class for all song contexts. A Song object encapsulates the state information
  * for a particular musical piece. The state information includes:
@@ -9,7 +11,7 @@ package com.musicretrieval.trackmix.Models;
  *     <li> Beats per minute (BPM)
  * </ul>
  */
-public class Song {
+public class Song implements Serializable {
     public static final int MINIMUM_BPM = 60;
     public static final int MAXIMUM_BPM = 300;
 
