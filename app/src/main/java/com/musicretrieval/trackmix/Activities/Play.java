@@ -12,17 +12,25 @@ import com.musicretrieval.trackmix.Models.Song;
 import com.musicretrieval.trackmix.R;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Locale;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.GainProcessor;
 import be.tarsos.dsp.WaveformSimilarityBasedOverlapAdd;
+import be.tarsos.dsp.beatroot.Agent;
+import be.tarsos.dsp.beatroot.AgentList;
+import be.tarsos.dsp.beatroot.Event;
+import be.tarsos.dsp.beatroot.EventList;
+import be.tarsos.dsp.beatroot.Induction;
 import be.tarsos.dsp.io.android.AndroidAudioPlayer;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.onsets.BeatRootSpectralFluxOnsetDetector;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
 
 public class Play extends AppCompatActivity {
 
@@ -31,7 +39,6 @@ public class Play extends AppCompatActivity {
 
     private AudioDispatcher dispatcher;
     private WaveformSimilarityBasedOverlapAdd wsola;
-    private GainProcessor gain;
     private AndroidAudioPlayer audioPlayer;
 
     private double tempo = 1.0;
@@ -71,10 +78,10 @@ public class Play extends AppCompatActivity {
         new AndroidFFMPEGLocator(this);
         try {
             wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
-            gain = new GainProcessor(1.0);
 
             dispatcher = AudioDispatcherFactory.fromPipe(song.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
             audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
+
             wsola.setDispatcher(dispatcher);
 
             dispatcher.addAudioProcessor(wsola);

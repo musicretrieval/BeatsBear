@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.musicretrieval.trackmix.R;
@@ -28,13 +30,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
     }
 
     @OnClick(R.id.main_walk_button)
     public void startWalk() {
-        Toast.makeText(this, "start walking", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         sharedPref.edit()
                 .putInt("SONG_LIST_BPM_LOW", 90)
@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.main_jog_button)
     public void startJog() {
-        Toast.makeText(this, "start jogging", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         sharedPref.edit()
                 .putInt("SONG_LIST_BPM_LOW", 137)
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.main_run_button)
     public void startRun() {
-        Toast.makeText(this, "start run", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         sharedPref.edit()
                 .putInt("SONG_LIST_BPM_LOW", 147)
@@ -67,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.main_sprint_button)
     public void startSprint() {
-        Toast.makeText(this, "start sprint", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, Playlist.class);
         sharedPref.edit()
                 .putInt("SONG_LIST_BPM_LOW", 160)
