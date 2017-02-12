@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.musicretrieval.trackmix.Activities.MainActivity"
     android:id="@+id/activity_main_layout"
@@ -20,16 +21,27 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
         android:orientation="vertical">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Activities" />
+            android:text="Music"
+            android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:rowCount="2"
             android:columnCount="2">
+
+            <Button
+                android:text="@string/main_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/main_all_button"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_gravity="center|fill" />
 
             <Button
                 android:text="@string/main_walk"
@@ -50,15 +62,6 @@
                 android:layout_gravity="center|fill" />
 
             <Button
-                android:text="@string/main_jog"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/main_jog_button"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                android:layout_gravity="center|fill" />
-
-            <Button
                 android:text="@string/main_sprint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -69,5 +72,6 @@
         </GridLayout>
 
     </LinearLayout>
+
 </android.support.design.widget.CoordinatorLayout>
 

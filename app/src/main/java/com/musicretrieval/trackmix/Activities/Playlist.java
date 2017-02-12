@@ -32,7 +32,6 @@ import be.tarsos.dsp.beatroot.EventList;
 import be.tarsos.dsp.beatroot.Induction;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.onsets.BeatRootSpectralFluxOnsetDetector;
 import be.tarsos.dsp.onsets.ComplexOnsetDetector;
 import be.tarsos.dsp.onsets.OnsetHandler;
 import butterknife.BindView;
@@ -45,7 +44,6 @@ public class Playlist extends AppCompatActivity {
 
     private int lowBpm;
     private int highBpm;
-    private int bpms[];
     private ArrayList<Song> songs;
     private PlaylistAdapter adapter;
     private LinearLayoutManager layoutManager;
@@ -79,8 +77,13 @@ public class Playlist extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        lowBpm = sharedPref.getInt("SONG_LIST_BPM_LOW", Song.MINIMUM_BPM);
-        highBpm = sharedPref.getInt("SONG_LIST_BPM_HIGH", Song.MAXIMUM_BPM);
+        if (!getIntent().getBooleanExtra("SONG_RECOMMEND", false)) {
+            lowBpm = sharedPref.getInt("SONG_LIST_BPM_LOW", Song.MINIMUM_BPM);
+            highBpm = sharedPref.getInt("SONG_LIST_BPM_HIGH", Song.MAXIMUM_BPM);
+        } else {
+            lowBpm = getIntent().getIntExtra("SONG_LIST_BPM_LOW", Song.MINIMUM_BPM);
+            highBpm = getIntent().getIntExtra("SONG_LIST_BPM_HIGH", Song.MAXIMUM_BPM);
+        }
         recommendSongs(lowBpm, highBpm);
         adapter.notifyDataSetChanged();
     }
@@ -130,6 +133,8 @@ public class Playlist extends AppCompatActivity {
                 int thisDuration = musicCursor.getInt(songDurationColumn);
                 int thisBpm = getBpm(data, thisDuration);
 
+                while (!dispatcher.isStopped());
+
                 if (thisBpm > lowBpm && thisBpm < highBpm) {
                     songs.add(new Song(thisId, data, thisTitle, thisArtist, thisAlbum, thisDuration, thisBpm));
                 }
@@ -149,24 +154,28 @@ public class Playlist extends AppCompatActivity {
 
         dispatcher = AudioDispatcherFactory.fromPipe(path, SAMPLE_RATE, 512, 256);
 
-        ComplexOnsetDetector b = new ComplexOnsetDetector(512, 0.3, 256.0/44100.0*4.0, -70);
+        // Sample 2.2 seconds of music
+        double start = duration/1000.0/2.0;
+        double stop = start + 2.2;
+        dispatcher.skip(start);
+        dispatcher.addAudioProcessor(new StopAudioProcessor(stop));
 
-        dispatcher.addAudioProcessor(b);
-        b.setHandler(new OnsetHandler() {
+        // Detect the beat intervals
+        ComplexOnsetDetector c = new ComplexOnsetDetector(512, 0.3, 256.0/44100.0*4.0, -70);
+        dispatcher.addAudioProcessor(c);
+        c.setHandler(new OnsetHandler() {
             @Override
             public void handleOnset(double v, double v1) {
                 double roundedTime = Math.round(v * 100)/100.0;
-                Event e = newEvent(roundedTime,0);
+                Event e = newEvent(roundedTime, 0);
                 e.salience = v1;
                 onsetList.add(e);
             }
         });
 
-        //TODO: Fix this hack, only checking last 10% of song, want to check in the middle of
-        // the song for  2.2 seconds
-        dispatcher.skip(duration/1000.0/1.1);
         dispatcher.run();
 
+        // Find the best agent that fits
         AgentList agents = Induction.beatInduction(onsetList);
         agents.beatTrack(onsetList, -1);
         Agent best = agents.bestAgent();
@@ -190,5 +199,5 @@ public class Playlist extends AppCompatActivity {
      */
     public static Event newEvent(double time, int beatNum) {
         return new Event(time,time, time, 56, 64, beatNum, 0, 1);
-    } // newBeat()
+    }
 }

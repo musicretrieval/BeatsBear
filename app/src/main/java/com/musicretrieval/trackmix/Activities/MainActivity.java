@@ -18,8 +18,8 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
+    @BindView(R.id.main_all_button)    Button allButton;
     @BindView(R.id.main_walk_button)   Button walkButton;
-    @BindView(R.id.main_jog_button)    Button jogButton;
     @BindView(R.id.main_run_button)    Button runButton;
     @BindView(R.id.main_sprint_button) Button sprintButton;
 
@@ -33,22 +33,32 @@ public class MainActivity extends AppCompatActivity {
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
     }
 
-    @OnClick(R.id.main_walk_button)
-    public void startWalk() {
+    @OnClick(R.id.main_all_button)
+    public void startAll() {
         Intent intent = new Intent(this, Playlist.class);
+        intent.putExtra("SONG_LIST_BPM_LOW", 0);
+        intent.putExtra("SONG_LIST_BPM_HIGH", 999);
+        intent.putExtra("SONG_RECOMMEND", true);
         sharedPref.edit()
-                .putInt("SONG_LIST_BPM_LOW", 90)
-                .putInt("SONG_LIST_BPM_HIGH", 137)
+                .remove("SONG_LIST_BPM_LOW")
+                .remove("SONG_LIST_BPM_HIGH")
+                .putInt("SONG_LIST_BPM_LOW", 0)
+                .putInt("SONG_LIST_BPM_HIGH", 999)
                 .apply();
         startActivity(intent);
     }
 
-    @OnClick(R.id.main_jog_button)
-    public void startJog() {
+    @OnClick(R.id.main_walk_button)
+    public void startWalk() {
         Intent intent = new Intent(this, Playlist.class);
+        intent.putExtra("SONG_LIST_BPM_LOW", 60);
+        intent.putExtra("SONG_LIST_BPM_HIGH", 137);
+        intent.putExtra("SONG_RECOMMEND", true);
         sharedPref.edit()
-                .putInt("SONG_LIST_BPM_LOW", 137)
-                .putInt("SONG_LIST_BPM_HIGH", 147)
+                .remove("SONG_LIST_BPM_LOW")
+                .remove("SONG_LIST_BPM_HIGH")
+                .putInt("SONG_LIST_BPM_LOW", 60)
+                .putInt("SONG_LIST_BPM_HIGH", 137)
                 .apply();
         startActivity(intent);
     }
@@ -56,8 +66,13 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.main_run_button)
     public void startRun() {
         Intent intent = new Intent(this, Playlist.class);
+        intent.putExtra("SONG_LIST_BPM_LOW", 137);
+        intent.putExtra("SONG_LIST_BPM_HIGH", 160);
+        intent.putExtra("SONG_RECOMMEND", true);
         sharedPref.edit()
-                .putInt("SONG_LIST_BPM_LOW", 147)
+                .remove("SONG_LIST_BPM_LOW")
+                .remove("SONG_LIST_BPM_HIGH")
+                .putInt("SONG_LIST_BPM_LOW", 137)
                 .putInt("SONG_LIST_BPM_HIGH", 160)
                 .apply();
         startActivity(intent);
@@ -66,7 +81,12 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.main_sprint_button)
     public void startSprint() {
         Intent intent = new Intent(this, Playlist.class);
+        intent.putExtra("SONG_LIST_BPM_LOW", 160);
+        intent.putExtra("SONG_LIST_BPM_HIGH", 300);
+        intent.putExtra("SONG_RECOMMEND", true);
         sharedPref.edit()
+                .remove("SONG_LIST_BPM_LOW")
+                .remove("SONG_LIST_BPM_HIGH")
                 .putInt("SONG_LIST_BPM_LOW", 160)
                 .putInt("SONG_LIST_BPM_HIGH", 300)
                 .apply();

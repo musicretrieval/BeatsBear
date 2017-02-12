@@ -46,7 +46,7 @@
             android:layout_marginBottom="8dp">
 
             <TextView
-                android:text="BPM"
+                android:text="@string/playlist_bpm"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/playlist_bpm_title"
@@ -56,7 +56,7 @@
                 android:textSize="18sp" />
 
             <TextView
-                android:text="Song"
+                android:text="@string/playlist_song"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/playlist_song_title"

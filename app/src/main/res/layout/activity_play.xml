@@ -33,7 +33,7 @@
             android:layout_weight="0"
             android:background="@drawable/ic_remove_black_24px"
             android:gravity="center"
-            android:layout_width="wrap_content" />
+            android:layout_width="64dp" />
 
         <TextView
             android:text="BPM"
@@ -49,7 +49,7 @@
             android:layout_weight="0"
             android:background="@drawable/ic_add_black_24px"
             android:gravity="center"
-            android:layout_width="wrap_content" />
+            android:layout_width="64dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,36 +57,79 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
+        <TextView
+            android:text="0"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_current_song_time"
+            android:layout_weight="1"
+            android:textAlignment="viewStart" />
+
+        <TextView
+            android:text="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_current_song_total_time"
+            android:layout_weight="1"
+            android:textAlignment="viewEnd" />
+    </LinearLayout>
+
+    <SeekBar
+        style="@android:style/Widget.DeviceDefault.Light.SeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="1"
+        android:id="@+id/play_seek_bar" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="64dp"
             android:layout_height="wrap_content"
             android:id="@+id/play_shuffle_btn"
             android:layout_weight="1"
             android:background="@drawable/ic_shuffle_black_24px" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="64dp"
             android:layout_height="wrap_content"
             android:id="@+id/play_rewind_btn"
             android:layout_weight="1"
             android:background="@drawable/ic_fast_rewind_black_24px" />
 
-        <Button
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/play_play_btn"
-            android:layout_weight="1"
-            android:background="@drawable/ic_play_arrow_black_24px" />
+            android:layout_weight="1">
+
+            <Button
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/play_play_btn"
+                android:layout_weight="1"
+                android:background="@drawable/ic_play_arrow_black_24px" />
+
+            <Button
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/play_pause_btn"
+                android:background="@drawable/ic_pause_black_24px"
+                android:visibility="gone" />
+        </RelativeLayout>
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="64dp"
             android:layout_height="wrap_content"
             android:id="@+id/play_forward_btn"
             android:layout_weight="1"
             android:background="@drawable/ic_fast_forward_black_24px" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="64dp"
             android:layout_height="wrap_content"
             android:id="@+id/play_repeat_btn"
             android:layout_weight="1"
