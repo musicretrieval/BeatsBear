@@ -9,4 +9,5 @@
     <string name="title_activity_play">Play</string>
     <string name="playlist_bpm">BPM</string>
     <string name="playlist_song">Song</string>
+    <string name="songlist_title">Add Song</string>
 </resources>

@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/play_song_title"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large" />
+        android:textAppearance="@android:style/TextAppearance.Large" />
 
     <ImageView
         android:layout_width="match_parent"
@@ -110,7 +110,6 @@
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_play_btn"
-                android:layout_weight="1"
                 android:background="@drawable/ic_play_arrow_black_24px" />
 
             <Button

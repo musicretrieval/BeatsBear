@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.musicretrieval.trackmix.Models.Song;
 import com.musicretrieval.trackmix.R;
 
-import org.w3c.dom.Text;
+import com.musicretrieval.trackmix.Utils.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -94,9 +94,9 @@ public class Play extends AppCompatActivity {
         currentSong = songs.get(0);
         currentBpm = currentSong.getBpm();
 
-        currentSongTimeTv.setText(String.valueOf(currentTime));
-        currentSongTotalTimeTv.setText(String.valueOf(currentSong.getDuration()/1000));
-        songSeekBar.setMax(100);
+        currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
+        currentSongTotalTimeTv.setText(TimeUtil.secondsToMMSS(currentSong.getDuration()/1000));
+        songSeekBar.setMax(1000);
         songSeekBar.setProgress(0);
 
         play(currentSong, 0);
@@ -127,13 +127,17 @@ public class Play extends AppCompatActivity {
             processor = new AudioProcessor() {
                 @Override
                 public boolean process(AudioEvent audioEvent) {
-                    updateTimes();
+                    if (playing) {
+                        updateTimes();
+                    }
                     return false;
                 }
 
                 @Override
                 public void processingFinished() {
-                    playNextSong();
+                    if (playing) {
+                        playNextSong();
+                    }
                 }
             };
 
@@ -156,7 +160,7 @@ public class Play extends AppCompatActivity {
                 double percent = currentTime / (currentSong.getDuration()/1000.0);
                 int progress =  (int) (percent * songSeekBar.getMax());
                 // Things that need to be updated on UI thread, otherwise it will crash
-                currentSongTimeTv.setText(String.valueOf(currentTime));
+                currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
                 songSeekBar.setProgress(progress);
             }
         });
@@ -226,8 +230,8 @@ public class Play extends AppCompatActivity {
         songPauseBtn.setVisibility(View.GONE);
         if (playing) {
             currentTime = (long) dispatcher.secondsProcessed();
-            dispatcher.stop();
             playing = false;
+            dispatcher.stop();
         }
     }
 }
