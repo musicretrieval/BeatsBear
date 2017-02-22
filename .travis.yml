@@ -1,24 +1,12 @@
+sudo: required
 language: android
+jdk: oraclejdk8
+
 android:
   components:
-    # Uncomment the lines below if you want to
-    # use the latest revision of Android SDK Tools
     - platform-tools
     - tools
-
-    # The BuildTools version used by your project
-    - build-tools-25.0.2
-
-    # The SDK version used to compile your project
-    - android-25
-
-    # Additional components (Currently not needed)
-    # - extra-google-google_play_services
-    # - extra-google-m2repository
-    # - extra-android-m2repository
-    # - addon-google_apis-google-19
-
-    # Specify at least one system image,
-    # if you need to run emulator(s) during your tests
-    # (Currently not needed)
-    # - sys-img-armeabi-v7a-android-22
+    - build-tools-23.0.3
+    - android-23
+    - sys-img-armeabi-v7a-android-23
+    - sys-img-x86-android-23 
