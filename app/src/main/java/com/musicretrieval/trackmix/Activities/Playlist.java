@@ -92,7 +92,10 @@ public class Playlist extends AppCompatActivity {
             lowBpm = getIntent().getIntExtra("SONG_LIST_BPM_LOW", Song.MINIMUM_BPM);
             highBpm = getIntent().getIntExtra("SONG_LIST_BPM_HIGH", Song.MAXIMUM_BPM);
         }
-        new RecommendSongsTask().execute();
+
+        if (recommendedSongs.isEmpty()) {
+            new RecommendSongsTask().execute();
+        }
     }
 
     @OnClick(R.id.playlist_play)
@@ -247,8 +250,6 @@ public class Playlist extends AppCompatActivity {
             playlistPlay.setVisibility(View.VISIBLE);
             playlistProgress.setVisibility(View.GONE);
         }
-
-
 
         @Override
         protected void onPreExecute() {

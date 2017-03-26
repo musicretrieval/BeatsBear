@@ -17,8 +17,12 @@ import com.musicretrieval.trackmix.R;
 
 import com.musicretrieval.trackmix.Utils.TimeUtil;
 
+import java.util.AbstractQueue;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.RunnableFuture;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -37,7 +41,7 @@ import butterknife.OnLongClick;
 public class Play extends AppCompatActivity {
 
     private final String TAG = "PLAY";
-    private ArrayList<Song> songs;
+    private Queue<Song> songQ;
 
     private AudioDispatcher dispatcher;
     private WaveformSimilarityBasedOverlapAdd wsola;
@@ -93,9 +97,12 @@ public class Play extends AppCompatActivity {
         setContentView(R.layout.activity_play);
         ButterKnife.bind(this);
 
-        songs = (ArrayList<Song>)getIntent().getSerializableExtra("PLAY_PLAYLIST");
-        currentSong = songs.get(0);
+        songQ = new LinkedList<>();
+        songQ.addAll((ArrayList<Song>)getIntent().getSerializableExtra("PLAY_PLAYLIST"));
+
+        currentSong = songQ.remove();
         currentBpm = currentSong.getBpm();
+        songQ.add(currentSong);
 
         currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
         currentSongTotalTimeTv.setText(TimeUtil.secondsToMMSS(currentSong.getDuration()/1000));
@@ -108,8 +115,8 @@ public class Play extends AppCompatActivity {
         songPlayBtn.setVisibility(View.GONE);
         songPauseBtn.setVisibility(View.VISIBLE);
 
-        setIncreaseTempoOnClickListener();
-        setDecreaseTempoOnClickListener();
+        setIncreaseTempoOnTouchListener();
+        setDecreaseTempoOnTouchListener();
     }
 
     @Override
@@ -165,39 +172,27 @@ public class Play extends AppCompatActivity {
 
     public void updateTimes() {
         currentTime = (long) dispatcher.secondsProcessed();
+        // Things that need to be updated on UI thread, otherwise it will crash
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                long totalTime = currentSong.getDuration()/1000;
                 double percent = currentTime / (currentSong.getDuration()/1000.0);
                 int progress =  (int) (percent * songSeekBar.getMax());
-                // Things that need to be updated on UI thread, otherwise it will crash
                 currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
+                currentSongTotalTimeTv.setText(TimeUtil.secondsToMMSS(totalTime));
                 songSeekBar.setProgress(progress);
             }
         });
     }
 
     public void playNextSong() {
-        int currentSongIndex = songs.indexOf(currentSong);
-        if (currentSongIndex + 1 == songs.size()) {
-            // play from beginning
-            currentSongIndex = -1;
-        }
-        Song nextSong = songs.get(currentSongIndex + 1);
-        play(nextSong, 0);
+        currentSong = songQ.remove();
+        songQ.add(currentSong);
+        play(currentSong, 0);
     }
 
-    @OnLongClick(R.id.play_increase_tempo_btn)
-    public boolean longIncreaseTempo() {
-        tempo += 0.05;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
-        String tempoString = String.format(Locale.getDefault(), "%.2fx", tempo);
-        songTempo.setText(tempoString);
-        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
-        return true;
-    }
-
-    private void setIncreaseTempoOnClickListener() {
+    private void setIncreaseTempoOnTouchListener() {
         increaseTempoBtn.setOnTouchListener(new View.OnTouchListener() {
             private Handler handler;
 
@@ -225,54 +220,62 @@ public class Play extends AppCompatActivity {
 
             Runnable increaseTempoAction = new Runnable() {
                 @Override public void run() {
-                    tempo += 0.05;
-                    currentBpm = (int) (currentSong.getBpm() * tempo);
-                    String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-                    wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
-                    songTempo.setText(tempoString);
+                    increaseTempoLong();
                     handler.postDelayed(this, 300);
                 }
             };
         });
     }
 
-    private void setDecreaseTempoOnClickListener() {
+    private void setDecreaseTempoOnTouchListener() {
         decreaseTempoBtn.setOnTouchListener(new View.OnTouchListener() {
             private Handler handler;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()) {
+                switch(event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
                         if (handler != null) return true;
                         handler = new Handler();
-                        handler.postDelayed(increaseTempoAction, 300);
+                        handler.postDelayed(decreaseTempoAction, 300);
                         break;
                     case MotionEvent.ACTION_UP:
                         if (handler == null) return true;
-                        handler.removeCallbacks(increaseTempoAction);
+                        handler.removeCallbacks(decreaseTempoAction);
                         handler = null;
                         break;
                     case MotionEvent.ACTION_CANCEL:
                         if (handler == null) return true;
-                        handler.removeCallbacks(increaseTempoAction);
+                        handler.removeCallbacks(decreaseTempoAction);
                         handler = null;
                         break;
                 }
                 return false;
             }
 
-            Runnable increaseTempoAction = new Runnable() {
+            Runnable decreaseTempoAction = new Runnable() {
                 @Override public void run() {
-                    tempo -= 0.05;
-                    currentBpm = (int) (currentSong.getBpm() * tempo);
-                    String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-                    wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
-                    songTempo.setText(tempoString);
+                    decreaseTempoLong();
                     handler.postDelayed(this, 300);
                 }
             };
         });
+    }
+
+    private void increaseTempoLong() {
+        tempo += 0.05;
+        currentBpm = (int) (currentSong.getBpm() * tempo);
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        songTempo.setText(tempoString);
+    }
+
+    private void decreaseTempoLong() {
+        tempo -= 0.05;
+        currentBpm = (int) (currentSong.getBpm() * tempo);
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        songTempo.setText(tempoString);
     }
 
     @OnClick(R.id.play_increase_tempo_btn)
@@ -284,11 +287,20 @@ public class Play extends AppCompatActivity {
         songTempo.setText(tempoString);
     }
 
+    @OnClick(R.id.play_decrease_tempo_btn)
+    public void decreaseTempo() {
+        tempo -= 0.01;
+        currentBpm = (int) (currentSong.getBpm() * tempo);
+        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        songTempo.setText(tempoString);
+    }
+
     @OnClick(R.id.play_play_btn)
     public void togglePlay() {
         songPlayBtn.setVisibility(View.GONE);
         songPauseBtn.setVisibility(View.VISIBLE);
-        if (!playing) {
+        if (!playing && dispatcher != null) {
             play(currentSong, currentTime);
             playing = true;
         }
@@ -298,7 +310,7 @@ public class Play extends AppCompatActivity {
     public void togglePause() {
         songPlayBtn.setVisibility(View.VISIBLE);
         songPauseBtn.setVisibility(View.GONE);
-        if (playing) {
+        if (playing && dispatcher != null) {
             currentTime = (long) dispatcher.secondsProcessed();
             playing = false;
             dispatcher.stop();
