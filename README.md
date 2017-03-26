@@ -12,6 +12,7 @@ Download `prebuilt-binaries.zip`, you will get three files:
 - armeabi-v7a/ffmpeg
 - armeabi-v7a-neon/ffmpeg
 - x86/ffmpeg
+
 Rename each of the `ffmpeg` to `<FOLDER_NAME>_ffmpeg` and place it in `app/build/intermediates/assets`. Your `app/build/intermediates/assets` folder should have: `armeabi-v7a_ffmpeg`, `armeabi-v7a-neon_ffmpeg`, and `x86_ffmpeg`
 
 If you are using Android emulator, you will want to put music in the emulator:
