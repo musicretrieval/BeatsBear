@@ -13,12 +13,21 @@ Download `prebuilt-binaries.zip`, you will get three files:
 - armeabi-v7a-neon/ffmpeg
 - x86/ffmpeg
 
-Rename each of the `ffmpeg` to `<FOLDER_NAME>_ffmpeg` and place it in `app/build/intermediates/assets`. Your `app/build/intermediates/assets` folder should have: `armeabi-v7a_ffmpeg`, `armeabi-v7a-neon_ffmpeg`, and `x86_ffmpeg`
+Rename each of the `ffmpeg` to `<FOLDER_NAME>_ffmpeg` and place it in `app/build/intermediates/assets`. Your `app/build/intermediates/assets` folder should have: `armeabi-v7a_ffmpeg`, `armeabi-v7a-neon_ffmpeg`, and `x86_ffmpeg`. If that does not work, try putting it in `app/build/intermediates/assets/debug`.
 
 If you are using Android emulator, you will want to put music in the emulator:
 - download some songs
 - use Android Device Monitor
-- store in /storage/sdcard/Music, or a similar path
+- /storage/sdcard/Music, or a similar path
+- For API 23 it should be storage/emulated/0/Music
+- May need to restart emulator
+
+Enable storage permissions: 
+- Settings -> Apps -> TrackMix -> Permissions -> Storage
+
+# Troubleshooting
+
+- You may need to use API 23, it seems that API 23+ does not work well with this project.
 
 # Technologies
 [TarsosDSP](https://github.com/JorenSix/TarsosDSP) for audio processing
