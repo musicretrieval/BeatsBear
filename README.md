@@ -6,7 +6,9 @@ A realtime tempo adjustment application for runners.
 
 # Build Guide
 
-To install, this Android project requires the following library:
+Try building and running the application, if it doesn't work, the ffmpeg library might be missing.
+
+To run, this Android project requires the following library:
 https://github.com/WritingMinds/ffmpeg-android/releases
 Download `prebuilt-binaries.zip`, you will get three files:
 - armeabi-v7a/ffmpeg
