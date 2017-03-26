@@ -2,8 +2,10 @@ package com.musicretrieval.trackmix.Activities;
 
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -17,6 +19,7 @@ import com.musicretrieval.trackmix.Utils.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.RunnableFuture;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -104,6 +107,14 @@ public class Play extends AppCompatActivity {
 
         songPlayBtn.setVisibility(View.GONE);
         songPauseBtn.setVisibility(View.VISIBLE);
+
+        setIncreaseTempoOnClickListener();
+        setDecreaseTempoOnClickListener();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     public void play(final Song song, long seconds) {
@@ -180,34 +191,93 @@ public class Play extends AppCompatActivity {
     public boolean longIncreaseTempo() {
         tempo += 0.05;
         currentBpm = (int) (currentSong.getBpm() * tempo);
-        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+        String tempoString = String.format(Locale.getDefault(), "%.2fx", tempo);
         songTempo.setText(tempoString);
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
         return true;
+    }
+
+    private void setIncreaseTempoOnClickListener() {
+        increaseTempoBtn.setOnTouchListener(new View.OnTouchListener() {
+            private Handler handler;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if (handler != null) return true;
+                        handler = new Handler();
+                        handler.postDelayed(increaseTempoAction, 300);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (handler == null) return true;
+                        handler.removeCallbacks(increaseTempoAction);
+                        handler = null;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        if (handler == null) return true;
+                        handler.removeCallbacks(increaseTempoAction);
+                        handler = null;
+                        break;
+                }
+                return false;
+            }
+
+            Runnable increaseTempoAction = new Runnable() {
+                @Override public void run() {
+                    tempo += 0.05;
+                    currentBpm = (int) (currentSong.getBpm() * tempo);
+                    String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+                    wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+                    songTempo.setText(tempoString);
+                    handler.postDelayed(this, 300);
+                }
+            };
+        });
+    }
+
+    private void setDecreaseTempoOnClickListener() {
+        decreaseTempoBtn.setOnTouchListener(new View.OnTouchListener() {
+            private Handler handler;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if (handler != null) return true;
+                        handler = new Handler();
+                        handler.postDelayed(increaseTempoAction, 300);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (handler == null) return true;
+                        handler.removeCallbacks(increaseTempoAction);
+                        handler = null;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        if (handler == null) return true;
+                        handler.removeCallbacks(increaseTempoAction);
+                        handler = null;
+                        break;
+                }
+                return false;
+            }
+
+            Runnable increaseTempoAction = new Runnable() {
+                @Override public void run() {
+                    tempo -= 0.05;
+                    currentBpm = (int) (currentSong.getBpm() * tempo);
+                    String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+                    wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+                    songTempo.setText(tempoString);
+                    handler.postDelayed(this, 300);
+                }
+            };
+        });
     }
 
     @OnClick(R.id.play_increase_tempo_btn)
     public void increaseTempo() {
         tempo += 0.01;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
-        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
-        songTempo.setText(tempoString);
-    }
-
-    @OnLongClick(R.id.play_decrease_tempo_btn)
-    public boolean longDecreaseTempo() {
-        tempo -= 0.05;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
-        String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
-        songTempo.setText(tempoString);
-        return true;
-    }
-
-    @OnClick(R.id.play_decrease_tempo_btn)
-    public void decreaseTempo() {
-        tempo -= 0.01;
         currentBpm = (int) (currentSong.getBpm() * tempo);
         String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
