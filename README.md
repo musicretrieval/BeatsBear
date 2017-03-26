@@ -1,4 +1,6 @@
-# TrackMix
+# TrackMix 
+
+![alt text](trackmix_logo.png "TrackMix")
 
 A realtime tempo adjustment application for runners.
 
