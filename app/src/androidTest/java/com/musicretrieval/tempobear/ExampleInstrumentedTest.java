@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix;
+package com.musicretrieval.tempobear;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

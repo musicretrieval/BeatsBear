@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix.Activities;
+package com.musicretrieval.tempobear.Activities;
 
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -12,18 +12,14 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.musicretrieval.trackmix.Models.Song;
-import com.musicretrieval.trackmix.R;
+import com.musicretrieval.tempobear.Models.Song;
+import com.musicretrieval.tempobear.R;
 
-import com.musicretrieval.trackmix.Utils.TimeUtil;
+import com.musicretrieval.tempobear.Utils.TimeUtil;
 
-import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.RunnableFuture;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -35,7 +31,6 @@ import be.tarsos.dsp.io.android.AudioDispatcherFactory;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnLongClick;
 
 
 public class Play extends AppCompatActivity {

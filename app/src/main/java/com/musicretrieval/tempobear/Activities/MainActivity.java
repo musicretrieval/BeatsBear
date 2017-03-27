@@ -1,16 +1,13 @@
-package com.musicretrieval.trackmix.Activities;
+package com.musicretrieval.tempobear.Activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.musicretrieval.trackmix.R;
+import com.musicretrieval.tempobear.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

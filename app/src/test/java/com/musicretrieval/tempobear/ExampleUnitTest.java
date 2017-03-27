@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix;
+package com.musicretrieval.tempobear;
 
 import org.junit.Test;
 

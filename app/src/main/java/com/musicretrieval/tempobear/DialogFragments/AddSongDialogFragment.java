@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix.DialogFragments;
+package com.musicretrieval.tempobear.DialogFragments;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -9,9 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.musicretrieval.trackmix.Adapters.PlaylistAdapter;
-import com.musicretrieval.trackmix.Models.Song;
-import com.musicretrieval.trackmix.R;
+import com.musicretrieval.tempobear.Adapters.PlaylistAdapter;
+import com.musicretrieval.tempobear.Models.Song;
+import com.musicretrieval.tempobear.R;
 
 import java.util.ArrayList;
 

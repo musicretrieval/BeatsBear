@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix.Adapters;
+package com.musicretrieval.tempobear.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,14 +7,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.musicretrieval.trackmix.Activities.Play;
-import com.musicretrieval.trackmix.Models.Song;
-import com.musicretrieval.trackmix.R;
-import com.musicretrieval.trackmix.Utils.CircularTextView;
+import com.musicretrieval.tempobear.Activities.Play;
+import com.musicretrieval.tempobear.Models.Song;
+import com.musicretrieval.tempobear.R;
+import com.musicretrieval.tempobear.Utils.CircularTextView;
 
 import java.util.ArrayList;
 

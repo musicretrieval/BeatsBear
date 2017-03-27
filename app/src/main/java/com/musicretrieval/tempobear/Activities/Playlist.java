@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix.Activities;
+package com.musicretrieval.tempobear.Activities;
 
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -20,10 +20,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.musicretrieval.trackmix.Adapters.PlaylistAdapter;
-import com.musicretrieval.trackmix.DialogFragments.AddSongDialogFragment;
-import com.musicretrieval.trackmix.Models.Song;
-import com.musicretrieval.trackmix.R;
+import com.musicretrieval.tempobear.Adapters.PlaylistAdapter;
+import com.musicretrieval.tempobear.DialogFragments.AddSongDialogFragment;
+import com.musicretrieval.tempobear.Models.Song;
+import com.musicretrieval.tempobear.R;
 
 import java.util.ArrayList;
 

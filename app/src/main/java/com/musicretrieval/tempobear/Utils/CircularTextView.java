@@ -1,4 +1,4 @@
-package com.musicretrieval.trackmix.Utils;
+package com.musicretrieval.tempobear.Utils;
 
 import android.content.Context;
 import android.graphics.Canvas;
