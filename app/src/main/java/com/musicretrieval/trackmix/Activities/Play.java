@@ -117,6 +117,7 @@ public class Play extends AppCompatActivity {
 
         setIncreaseTempoOnTouchListener();
         setDecreaseTempoOnTouchListener();
+        setSeekbarListener();
     }
 
     @Override
@@ -136,6 +137,7 @@ public class Play extends AppCompatActivity {
         });
 
         new AndroidFFMPEGLocator(this);
+
         try {
             tempo = currentBpm / song.getBpm();
             wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
@@ -172,6 +174,16 @@ public class Play extends AppCompatActivity {
 
     public void updateTimes() {
         currentTime = (long) dispatcher.secondsProcessed();
+        updateSeekBarUI();
+    }
+
+    public void playNextSong() {
+        currentSong = songQ.remove();
+        songQ.add(currentSong);
+        play(currentSong, 0);
+    }
+
+    void updateSeekBarUI() {
         // Things that need to be updated on UI thread, otherwise it will crash
         runOnUiThread(new Runnable() {
             @Override
@@ -186,10 +198,11 @@ public class Play extends AppCompatActivity {
         });
     }
 
-    public void playNextSong() {
-        currentSong = songQ.remove();
-        songQ.add(currentSong);
-        play(currentSong, 0);
+    private void stopDispatcher() {
+        if (dispatcher != null) {
+            dispatcher.stop();
+            dispatcher = null;
+        }
     }
 
     private void setIncreaseTempoOnTouchListener() {
@@ -262,6 +275,30 @@ public class Play extends AppCompatActivity {
         });
     }
 
+    private void setSeekbarListener() {
+        songSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                currentTime = (long) (seekBar.getProgress()/1000.0 * (currentSong.getDuration()/1000.0));
+                playing = false;
+                stopDispatcher();
+                play(currentSong, currentTime);
+                playing = true;
+                updateSeekBarUI();
+            }
+        });
+    }
+
     private void increaseTempoLong() {
         tempo += 0.05;
         currentBpm = (int) (currentSong.getBpm() * tempo);
@@ -313,7 +350,7 @@ public class Play extends AppCompatActivity {
         if (playing && dispatcher != null) {
             currentTime = (long) dispatcher.secondsProcessed();
             playing = false;
-            dispatcher.stop();
+            stopDispatcher();
         }
     }
 }
