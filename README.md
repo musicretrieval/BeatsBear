@@ -1,10 +1,10 @@
-# TrackMix 
+# TempoBear 
 
-![alt text](trackmix_logo.png "TrackMix")
+![alt text](tempobear.png)
 
 A realtime tempo adjustment application for runners.
 
-[![Build Status](https://travis-ci.org/musicretreival/TrackMix.svg?branch=master)](https://travis-ci.org/musicretreival/TrackMix)
+[![Build Status](https://travis-ci.org/musicretrieval/TempoBear.svg?branch=master)](https://travis-ci.org/musicretrieval/TempoBear)
 
 # Build Guide
 
