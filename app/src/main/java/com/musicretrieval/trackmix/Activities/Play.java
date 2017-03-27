@@ -41,7 +41,7 @@ import butterknife.OnLongClick;
 public class Play extends AppCompatActivity {
 
     private final String TAG = "PLAY";
-    private Queue<Song> songQ;
+    private LinkedList<Song> songQ;
 
     private AudioDispatcher dispatcher;
     private WaveformSimilarityBasedOverlapAdd wsola;
@@ -109,7 +109,7 @@ public class Play extends AppCompatActivity {
         songSeekBar.setMax(1000);
         songSeekBar.setProgress(0);
 
-        play(currentSong, 0);
+        play(0);
         playing = true;
 
         songPlayBtn.setVisibility(View.GONE);
@@ -125,24 +125,14 @@ public class Play extends AppCompatActivity {
         super.onResume();
     }
 
-    public void play(final Song song, long seconds) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Things that need to be updated on UI thread, otherwise it will crash
-                songTitle.setText(song.getTitle());
-                String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-                songTempo.setText(tempoString);
-            }
-        });
-
+    public void play(long seconds) {
         new AndroidFFMPEGLocator(this);
 
         try {
-            tempo = currentBpm / song.getBpm();
+            tempo = currentBpm / currentSong.getBpm();
             wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
 
-            dispatcher = AudioDispatcherFactory.fromPipe(song.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
+            dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
             audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
             processor = new AudioProcessor() {
                 @Override
@@ -170,6 +160,8 @@ public class Play extends AppCompatActivity {
         } catch (Exception ex) {
             Log.d(TAG, ex.getMessage());
         }
+
+        updateSongInfoUI();
     }
 
     public void updateTimes() {
@@ -178,9 +170,15 @@ public class Play extends AppCompatActivity {
     }
 
     public void playNextSong() {
-        currentSong = songQ.remove();
+        currentSong = songQ.pop();
         songQ.add(currentSong);
-        play(currentSong, 0);
+        play(0);
+    }
+
+    public void playPreviousSong() {
+        currentSong = songQ.removeLast();
+        songQ.add(currentSong);
+        play(0);
     }
 
     void updateSeekBarUI() {
@@ -198,10 +196,21 @@ public class Play extends AppCompatActivity {
         });
     }
 
+    void updateSongInfoUI() {
+        // Things that need to be updated on UI thread, otherwise it will crash
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                songTitle.setText(currentSong.getTitle());
+                String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+                songTempo.setText(tempoString);
+            }
+        });
+    }
+
     private void stopDispatcher() {
         if (dispatcher != null) {
             dispatcher.stop();
-            dispatcher = null;
         }
     }
 
@@ -292,7 +301,7 @@ public class Play extends AppCompatActivity {
                 currentTime = (long) (seekBar.getProgress()/1000.0 * (currentSong.getDuration()/1000.0));
                 playing = false;
                 stopDispatcher();
-                play(currentSong, currentTime);
+                play(currentTime);
                 playing = true;
                 updateSeekBarUI();
             }
@@ -338,7 +347,7 @@ public class Play extends AppCompatActivity {
         songPlayBtn.setVisibility(View.GONE);
         songPauseBtn.setVisibility(View.VISIBLE);
         if (!playing && dispatcher != null) {
-            play(currentSong, currentTime);
+            play(currentTime);
             playing = true;
         }
     }
@@ -351,6 +360,38 @@ public class Play extends AppCompatActivity {
             currentTime = (long) dispatcher.secondsProcessed();
             playing = false;
             stopDispatcher();
+        }
+    }
+
+    @OnClick(R.id.play_forward_btn)
+    public void nextSong() {
+        if (playing && dispatcher != null) {
+            playing = false;
+            stopDispatcher();
+            playNextSong();
+            playing = true;
+        } else {
+            currentSong = songQ.pop();
+            songQ.add(currentSong);
+            currentTime = 0;
+            updateSongInfoUI();
+            updateSeekBarUI();
+        }
+    }
+
+    @OnClick(R.id.play_rewind_btn)
+    public void previousSong() {
+        if (playing && dispatcher != null) {
+            playing = false;
+            stopDispatcher();
+            playPreviousSong();
+            playing = true;
+        } else {
+            currentSong = songQ.removeLast();
+            songQ.add(currentSong);
+            currentTime = 0;
+            updateSongInfoUI();
+            updateSeekBarUI();
         }
     }
 }
