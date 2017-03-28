@@ -23,6 +23,7 @@ import android.widget.ProgressBar;
 import com.musicretrieval.beatsbear.Adapters.PlaylistAdapter;
 import com.musicretrieval.beatsbear.DialogFragments.AddSongDialogFragment;
 import com.musicretrieval.beatsbear.Models.Song;
+import com.musicretrieval.beatsbear.Models.SongFeature;
 import com.musicretrieval.beatsbear.R;
 
 import java.util.ArrayList;
@@ -174,8 +175,21 @@ public class Playlist extends AppCompatActivity {
     }
 
     /**
+     * Estimates if the song is runnable
+     * @param path the path of the song
+     * @param duration the duration of the song in milliseconds
+     * @return true if the song is runnable, false otherwise
+     */
+    public boolean isRunnable(String path, int duration) {
+        SongFeature features = new SongFeature();
+        features.getFeatures(path, duration);
+        return true;
+    }
+
+    /**
      * Estimates the songs BPM
      * @param path the path of the song
+     * @param duration the duration of the song in milliseconds
      * @return the beats per minute of the song
      */
     public int getBpm(String path, int duration) {
