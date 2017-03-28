@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear.Utils;
+package com.musicretrieval.beatsbear.Utils;
 
 import android.content.Context;
 import android.graphics.Canvas;

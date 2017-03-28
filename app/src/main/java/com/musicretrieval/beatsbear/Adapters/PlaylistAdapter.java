@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear.Adapters;
+package com.musicretrieval.beatsbear.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,10 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.musicretrieval.tempobear.Activities.Play;
-import com.musicretrieval.tempobear.Models.Song;
-import com.musicretrieval.tempobear.R;
-import com.musicretrieval.tempobear.Utils.CircularTextView;
+import com.musicretrieval.beatsbear.Activities.Play;
+import com.musicretrieval.beatsbear.Models.Song;
+import com.musicretrieval.beatsbear.R;
+import com.musicretrieval.beatsbear.Utils.CircularTextView;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TempoBear</string>
+    <string name="app_name">BeatsBear</string>
     <string name="main_all">All</string>
     <string name="main_walk">Walking</string>
     <string name="main_run">Running</string>

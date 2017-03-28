@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear;
+package com.musicretrieval.beatsbear;
 
 import org.junit.Test;
 

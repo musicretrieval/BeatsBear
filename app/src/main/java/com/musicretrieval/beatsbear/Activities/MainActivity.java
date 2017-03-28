@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear.Activities;
+package com.musicretrieval.beatsbear.Activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 
-import com.musicretrieval.tempobear.R;
+import com.musicretrieval.beatsbear.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

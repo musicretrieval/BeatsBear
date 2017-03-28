@@ -1,10 +1,10 @@
-# TempoBear 
+# BeatsBear
 
-![alt text](tempobear.png)
+![alt text](beatsbear.png)
 
 A realtime tempo adjustment application for runners.
 
-[![Build Status](https://travis-ci.org/musicretrieval/TempoBear.svg?branch=master)](https://travis-ci.org/musicretrieval/TempoBear)
+[![Build Status](https://travis-ci.org/musicretrieval/BeatsBear.svg?branch=master)](https://travis-ci.org/musicretrieval/BeatsBear)
 
 # Build Guide
 

@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear.Models;
+package com.musicretrieval.beatsbear.Models;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear;
+package com.musicretrieval.beatsbear;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

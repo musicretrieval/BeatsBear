@@ -1,4 +1,4 @@
-package com.musicretrieval.tempobear.Activities;
+package com.musicretrieval.beatsbear.Activities;
 
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -12,10 +12,10 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.musicretrieval.tempobear.Models.Song;
-import com.musicretrieval.tempobear.R;
+import com.musicretrieval.beatsbear.Models.Song;
+import com.musicretrieval.beatsbear.R;
 
-import com.musicretrieval.tempobear.Utils.TimeUtil;
+import com.musicretrieval.beatsbear.Utils.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

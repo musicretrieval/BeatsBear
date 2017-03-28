@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp">
 
-    <com.musicretrieval.tempobear.Utils.CircularTextView
+    <com.musicretrieval.beatsbear.Utils.CircularTextView
         android:text="bpm"
         android:layout_height="wrap_content"
         android:id="@+id/playlistitem_bpm"
