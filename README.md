@@ -20,8 +20,8 @@ Download `prebuilt-binaries.zip`, you will get three files:
 Rename each of the `ffmpeg` to `<FOLDER_NAME>_ffmpeg` and place it in `app/build/intermediates/assets`. Your `app/build/intermediates/assets` folder should have: `armeabi-v7a_ffmpeg`, `armeabi-v7a-neon_ffmpeg`, and `x86_ffmpeg`. If that does not work, try putting it in `app/build/intermediates/assets/debug`.
 
 If you are using Android emulator, you will want to put music in the emulator:
-- download some songs
-- use Android Device Monitor
+- Download some songs
+- Use Android Device Monitor
 - /storage/sdcard/Music, or a similar path
 - For API 23 it should be storage/emulated/0/Music
 - May need to restart emulator
