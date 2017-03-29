@@ -23,7 +23,7 @@ import android.widget.ProgressBar;
 import com.musicretrieval.beatsbear.Adapters.PlaylistAdapter;
 import com.musicretrieval.beatsbear.DialogFragments.AddSongDialogFragment;
 import com.musicretrieval.beatsbear.Models.Song;
-import com.musicretrieval.beatsbear.Models.SongFeature;
+import com.musicretrieval.beatsbear.Models.SongFeatures;
 import com.musicretrieval.beatsbear.R;
 
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ import be.tarsos.dsp.beatroot.EventList;
 import be.tarsos.dsp.beatroot.Induction;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.mfcc.MFCC;
 import be.tarsos.dsp.onsets.ComplexOnsetDetector;
 import be.tarsos.dsp.onsets.OnsetHandler;
 import butterknife.BindView;
@@ -149,11 +150,11 @@ public class Playlist extends AppCompatActivity {
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 int thisDuration = musicCursor.getInt(songDurationColumn);
-                int thisBpm = getBpm(data, thisDuration);
+                SongFeatures features = getFeatures(data, thisDuration);
 
                 while (!dispatcher.isStopped());
 
-                songs.add(new Song(thisId, data, thisTitle, thisArtist, thisAlbum, thisDuration, thisBpm));
+                songs.add(new Song(thisId, data, thisTitle, thisArtist, thisAlbum, thisDuration, features));
 
             } while (musicCursor.moveToNext());
         }
@@ -175,39 +176,24 @@ public class Playlist extends AppCompatActivity {
     }
 
     /**
-     * Estimates if the song is runnable
+     * Estimates the songs features
      * @param path the path of the song
      * @param duration the duration of the song in milliseconds
-     * @return true if the song is runnable, false otherwise
+     * @return the features of the song
      */
-    public boolean isRunnable(String path, int duration) {
-        SongFeature features = new SongFeature();
-        features.getFeatures(path, duration);
-        return true;
-    }
+    public SongFeatures getFeatures(String path, int duration) {
+        SongFeatures features = new SongFeatures();
 
-    /**
-     * Estimates the songs BPM
-     * @param path the path of the song
-     * @param duration the duration of the song in milliseconds
-     * @return the beats per minute of the song
-     */
-    public int getBpm(String path, int duration) {
         new AndroidFFMPEGLocator(this);
 
         final EventList onsetList = new EventList();
+        final int buffSize = 512;
+        final int overlap = buffSize/2;
 
-        dispatcher = AudioDispatcherFactory.fromPipe(path, SAMPLE_RATE, 512, 256);
-
-        // Sample 2.2 seconds of music
-        double start = duration/1000.0/2.0;
-        double stop = start + 2.2;
-        dispatcher.skip(start);
-        dispatcher.addAudioProcessor(new StopAudioProcessor(stop));
+        dispatcher = AudioDispatcherFactory.fromPipe(path, SAMPLE_RATE, buffSize, overlap);
 
         // Detect the beat intervals
-        ComplexOnsetDetector c = new ComplexOnsetDetector(512, 0.3, 256.0/44100.0*4.0, -70);
-        dispatcher.addAudioProcessor(c);
+        ComplexOnsetDetector c = new ComplexOnsetDetector(buffSize, 0.3, 256.0/SAMPLE_RATE*4.0, -70);
         c.setHandler(new OnsetHandler() {
             @Override
             public void handleOnset(double v, double v1) {
@@ -217,6 +203,17 @@ public class Playlist extends AppCompatActivity {
                 onsetList.add(e);
             }
         });
+
+        // Marsyas: hopsize 512, winsize 512, 13 coefficients
+        MFCC m = new MFCC(buffSize, SAMPLE_RATE, 13, 13, 133.3334f, (float)SAMPLE_RATE/2f);
+
+        // Sample 2.2 seconds of music
+        double start = duration/1000.0/2.0;
+        double stop = start + 2.2;
+        dispatcher.skip(start);
+        dispatcher.addAudioProcessor(new StopAudioProcessor(stop));
+        dispatcher.addAudioProcessor(c);
+        dispatcher.addAudioProcessor(m);
 
         dispatcher.run();
 
@@ -231,10 +228,14 @@ public class Playlist extends AppCompatActivity {
             Log.d(TAG, "beattime = " + String.valueOf(best.beatTime));
             Log.d(TAG, "temposcore = " + String.valueOf(best.tempoScore));
             Log.d(TAG, "topscoretime = " + String.valueOf(best.topScoreTime));
-            return (int) ((1.0/best.beatInterval)*60.0);
+            features.bpm = (int) ((1.0/best.beatInterval)*60.0);
         } else {
-            return 0;
+            features.bpm = 0;
         }
+
+        features.mfcc = m.getMFCC();
+
+        return features;
     }
 
     /** Creates a new Event object representing an onset or beat.

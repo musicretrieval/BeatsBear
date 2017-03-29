@@ -21,7 +21,7 @@ public class Song implements Serializable {
     private String artist;
     private String album;
     private long duration;
-    private int bpm;
+    private SongFeatures features;
 
     /**
      * Song constructor
@@ -31,16 +31,16 @@ public class Song implements Serializable {
      * @param artist artist of the song
      * @param album album of the song
      * @param duration duration of the song in seconds
-     * @param bpm beats per minute of the song
+     * @param features features of the song
      */
-    public Song(long id, String data, String title, String artist, String album, long duration, int bpm) {
+    public Song(long id, String data, String title, String artist, String album, long duration, SongFeatures features) {
         this.id = id;
         this.data = data;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
-        this.bpm = bpm;
+        this.features = features;
     }
 
     public long getId() { return id; }
@@ -51,6 +51,8 @@ public class Song implements Serializable {
     public String getArtist() { return artist; }
     public String getAlbum() { return album; }
     public long getDuration() { return duration; }
-    public int getBpm() { return bpm; }
-    public void setBpm(int bpm) { this.bpm = bpm; }
+    public int getBpm() { return features.bpm; }
+    public void setBpm(int bpm) { this.features.bpm = bpm; }
+    public float[] getMfcc() { return features.mfcc; }
+    public void setMfcc(float[] mfcc) { this.features.mfcc = mfcc.clone(); }
 }
