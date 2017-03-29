@@ -20,13 +20,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Activities.Playlist"
-            android:label="@string/songlist_activity_title"
-            android:parentActivityName=".Activities.MainActivity" />
-        <activity
             android:name=".Activities.Play"
             android:label="@string/title_activity_play"
-            android:parentActivityName=".Activities.Playlist" />
+            android:parentActivityName=".Activities.MainActivity" />
     </application>
 
 </manifest>

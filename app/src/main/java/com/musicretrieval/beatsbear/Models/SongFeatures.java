@@ -6,7 +6,5 @@ public class SongFeatures implements Serializable {
     public int bpm;
     public float[] mfcc;
 
-    public SongFeatures() {
-        bpm = 0;
-    }
+    public SongFeatures() { }
 }

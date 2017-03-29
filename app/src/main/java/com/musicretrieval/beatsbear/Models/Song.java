@@ -14,6 +14,7 @@ import java.io.Serializable;
 public class Song implements Serializable {
     public static final int MINIMUM_BPM = 60;
     public static final int MAXIMUM_BPM = 300;
+    public static final int RELAXING_THRESHOLD = 130;
 
     private long id;
     private String data;

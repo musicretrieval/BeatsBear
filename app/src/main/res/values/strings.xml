@@ -1,9 +1,8 @@
 <resources>
     <string name="app_name">BeatsBear</string>
     <string name="main_all">All</string>
-    <string name="main_walk">Walking</string>
-    <string name="main_run">Running</string>
-    <string name="main_sprint">Sprinting</string>
+    <string name="main_relaxing">Relaxing</string>
+    <string name="main_activating">Activating</string>
 
     <string name="songlist_activity_title">Playlist</string>
     <string name="title_activity_play">Play</string>
