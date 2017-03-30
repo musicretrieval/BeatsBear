@@ -31,8 +31,8 @@ public class WekaModelTrainer {
 	static
 	{
 		songClasses = new HashMap<String, String>();
-		
-		String musicFiles = "/home/james/workspace/WekaModelTrainer/genres";
+		String rootPath = "/home/james/workspace/WekaModelTrainer/";
+		String musicFiles = rootPath + "genres";
 		int maxFiles = 24;
 		
 		for (int i = 0; i < maxFiles; i++) {
@@ -55,7 +55,7 @@ public class WekaModelTrainer {
 			songClasses.put(musicFiles + f, AudioFeatures.DISCO);
 		}
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < maxFiles; i++) {
 			String f = i < 10 ? "/hiphop/hiphop.0000" + i + ".au" : "/hiphop/hiphop.000" + i + ".au";
 			songClasses.put(musicFiles + f, AudioFeatures.HIPHOP);
 		}
@@ -94,7 +94,7 @@ public class WekaModelTrainer {
 				dispatcher.addAudioProcessor(new AudioProcessor(){
 					@Override
 					public boolean process(AudioEvent audioEvent) {
-						songInstances.add(audioFeaturizer.run(audioEvent, wavClass));
+						songInstances.add(audioFeaturizer.featurize(audioEvent, wavClass));
 						return true;	
 					}	
 
@@ -139,7 +139,11 @@ public class WekaModelTrainer {
 		// write the dataset to disk as an arff
 		System.out.println("Done Featurizing files. Writing arff to disk...");
 		try {
-			new BufferedWriter(new FileWriter(arffPath)).write(trainingData.toString());
+			BufferedWriter b = new BufferedWriter(new FileWriter(arffPath));
+			b.write(trainingData.toString());
+			b.newLine();
+			b.flush();
+			b.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

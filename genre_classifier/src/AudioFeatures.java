@@ -4,12 +4,12 @@ import java.util.HashMap;
 import weka.core.Attribute;
 
 public class AudioFeatures {
-	public static String BLUES = "0";
-	public static String CLASSICAL = "1";
-	public static String COUNTRY = "2";
-	public static String DISCO = "3";
-	public static String HIPHOP = "4";
-	public static String JAZZ = "5";
+	public static String BLUES = "Blues";
+	public static String CLASSICAL = "Classical";
+	public static String COUNTRY = "Country";
+	public static String DISCO = "Disco";
+	public static String HIPHOP = "HipHop";
+	public static String JAZZ = "Jazz";
 	public static enum Feature {
 			MFCC0,
 			MFCC1,

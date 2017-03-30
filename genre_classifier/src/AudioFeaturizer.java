@@ -29,7 +29,7 @@ public class AudioFeaturizer {
 		return dataset;
 	}
 	
-	public Instance run(AudioEvent e, String sampleClass) {
+	public Instance featurize(AudioEvent e, String sampleClass) {
 		Instance featureVals = new DenseInstance(AudioFeatures.Features.length+1);
 		Instances data = new Instances(dataset);
 		featureVals.setDataset(data);
@@ -136,7 +136,8 @@ public class AudioFeaturizer {
 				featureVals.setValue(i, featureVal);
 			}
 		}
-		featureVals.setValue(AudioFeatures.Features.length, sampleClass);
+		if (sampleClass != null)
+			featureVals.setValue(AudioFeatures.Features.length, sampleClass);
 		return featureVals;
 	}
 	
