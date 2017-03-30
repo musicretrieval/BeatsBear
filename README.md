@@ -1,6 +1,6 @@
 # BeatsBear
 
-![alt text](beatsbear.png)
+<img src="beatsbear.png" alt="beatsbear" width="250" height="250">
 
 A realtime tempo adjustment application for runners.
 
