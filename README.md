@@ -2,9 +2,16 @@
 
 <img src="beatsbear.png" alt="beatsbear" width="250" height="250">
 
-A realtime tempo adjustment application for runners.
+A realtime tempo adjustment application with genre classification.
 
 [![Build Status](https://travis-ci.org/musicretrieval/BeatsBear.svg?branch=master)](https://travis-ci.org/musicretrieval/BeatsBear)
+
+# Process
+The application first loads all the music that it can find on the user's device. From there TarsosDSP was used to estimate the BPM and MFCC's of each song. Using the MFCC's as a single vector feature, I was able to train an SVM classifier with Weka. After all the songs have been read and their features applied, the application will classify the songs and apply a tag. 
+
+The BPM and genre are used as a recommendation filter, which is still under work. Currently, if the songs BPM < 130 and the song was classified as Blues, Classical, or Country, then it is considered as relaxing music. Otherwise, it is considered activiating music. 
+
+From there, you can play music and play around with the song's tempo real time.
 
 # Build Guide
 
@@ -35,6 +42,7 @@ Enable storage permissions:
 
 # Technologies
 [TarsosDSP](https://github.com/JorenSix/TarsosDSP) for audio processing
+[Weka](http://www.cs.waikato.ac.nz/ml/weka/) for machine learning
 
 # References
 Genre icons made by [Freepik](http://www.freepik.com) from [flaticon](http://www.flaticon.com) is licensed by [Creative Commons BY 3.0](http://creativecommons.org/licenses/by/3.0/)
