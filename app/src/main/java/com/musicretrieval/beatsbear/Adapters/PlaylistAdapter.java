@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.musicretrieval.beatsbear.Activities.Play;
@@ -61,6 +62,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         TextView songArtist;
         @BindView(R.id.playlistitem_bpm)
         CircularTextView songBpm;
+        @BindView(R.id.playlistitem_genre)
+        ImageView songGenre;
 
         public PlaylistViewHolder(View view) {
             super(view);
@@ -87,9 +90,32 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
             songName.setText(song.getTitle());
             songArtist.setText(song.getArtist());
 
-            songBpm.setText(String.valueOf(song.getBpm()));
-            songBpm.setSolidColor(getBpmColor(song.getBpm()));
+            songBpm.setTextSize(12f);
+            songBpm.setText(String.valueOf(song.getFeatures().bpm));
+            songBpm.setSolidColor(getBpmColor(song.getFeatures().bpm));
             songBpm.setTextColor(Color.WHITE);
+
+            switch(song.getFeatures().genre) {
+                case "Blues":
+                    songGenre.setBackgroundResource(R.drawable.blues);
+                    break;
+                case "Classical":
+                    songGenre.setBackgroundResource(R.drawable.classical);
+                    break;
+                case "Country":
+                    songGenre.setBackgroundResource(R.drawable.country);
+                    break;
+                case "Disco":
+                    songGenre.setBackgroundResource(R.drawable.disco);
+                    break;
+                case "HipHop":
+                    songGenre.setBackgroundResource(R.drawable.hiphop);
+                    break;
+                case "Jazz":
+                    songGenre.setBackgroundResource(R.drawable.jazz);
+                    break;
+            }
+
         }
 
         /**

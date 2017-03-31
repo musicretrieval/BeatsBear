@@ -1,6 +1,10 @@
 package com.musicretrieval.beatsbear.Models;
 
+import com.musicretrieval.beatsbear.Classifier.GenreClassifier;
+
 import java.io.Serializable;
+
+import weka.classifiers.Classifier;
 
 /**
  * Song is the base class for all song contexts. A Song object encapsulates the state information
@@ -52,8 +56,5 @@ public class Song implements Serializable {
     public String getArtist() { return artist; }
     public String getAlbum() { return album; }
     public long getDuration() { return duration; }
-    public int getBpm() { return features.bpm; }
-    public void setBpm(int bpm) { this.features.bpm = bpm; }
-    public float[] getMfcc() { return features.mfcc; }
-    public void setMfcc(float[] mfcc) { this.features.mfcc = mfcc.clone(); }
+    public SongFeatures getFeatures() { return features; }
 }

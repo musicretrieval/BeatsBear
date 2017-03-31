@@ -96,7 +96,7 @@ public class Play extends AppCompatActivity {
         songQ.addAll((ArrayList<Song>)getIntent().getSerializableExtra("PLAY_PLAYLIST"));
 
         currentSong = songQ.remove();
-        currentBpm = currentSong.getBpm();
+        currentBpm = currentSong.getFeatures().bpm;
         songQ.add(currentSong);
 
         currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
@@ -124,7 +124,7 @@ public class Play extends AppCompatActivity {
         new AndroidFFMPEGLocator(this);
 
         try {
-            tempo = currentBpm / currentSong.getBpm();
+            tempo = currentBpm / currentSong.getFeatures().bpm;
             wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
 
             dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
@@ -305,7 +305,7 @@ public class Play extends AppCompatActivity {
 
     private void increaseTempoLong() {
         tempo += 0.05;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
+        currentBpm = (int) (currentSong.getFeatures().bpm * tempo);
         String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
         songTempo.setText(tempoString);
@@ -313,7 +313,7 @@ public class Play extends AppCompatActivity {
 
     private void decreaseTempoLong() {
         tempo -= 0.05;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
+        currentBpm = (int) (currentSong.getFeatures().bpm * tempo);
         String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
         songTempo.setText(tempoString);
@@ -322,7 +322,7 @@ public class Play extends AppCompatActivity {
     @OnClick(R.id.play_increase_tempo_btn)
     public void increaseTempo() {
         tempo += 0.01;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
+        currentBpm = (int) (currentSong.getFeatures().bpm * tempo);
         String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
         songTempo.setText(tempoString);
@@ -331,7 +331,7 @@ public class Play extends AppCompatActivity {
     @OnClick(R.id.play_decrease_tempo_btn)
     public void decreaseTempo() {
         tempo -= 0.01;
-        currentBpm = (int) (currentSong.getBpm() * tempo);
+        currentBpm = (int) (currentSong.getFeatures().bpm * tempo);
         String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
         songTempo.setText(tempoString);

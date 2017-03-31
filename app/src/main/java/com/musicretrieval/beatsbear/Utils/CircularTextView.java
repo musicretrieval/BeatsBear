@@ -39,7 +39,7 @@ public class CircularTextView extends TextView {
         int  w = this.getWidth();
 
         int diameter = ((h > w) ? h : w);
-        int radius = diameter/2;
+        int radius = (int) (diameter/2.5);
 
         this.setHeight(diameter);
         this.setWidth(diameter);

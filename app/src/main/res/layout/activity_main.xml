@@ -62,6 +62,7 @@
             android:id="@+id/activity_song_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
             tools:context="com.musicretrieval.beatsbear.Activities.Playlist">
 
             <ProgressBar

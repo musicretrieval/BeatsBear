@@ -37,4 +37,11 @@
             android:gravity="top" />
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/playlistitem_genre"
+        android:layout_width="6dp"
+        android:layout_height="16dp"
+        android:layout_gravity="center"
+        android:layout_weight="0.1" />
+
 </LinearLayout>

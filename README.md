@@ -35,3 +35,6 @@ Enable storage permissions:
 
 # Technologies
 [TarsosDSP](https://github.com/JorenSix/TarsosDSP) for audio processing
+
+# References
+Genre icons made by [Freepik](http://www.freepik.com) from [flaticon](http://www.flaticon.com) is licensed by [Creative Commons BY 3.0](http://creativecommons.org/licenses/by/3.0/)

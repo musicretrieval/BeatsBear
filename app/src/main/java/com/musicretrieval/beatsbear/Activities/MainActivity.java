@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,9 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.musicretrieval.beatsbear.Adapters.PlaylistAdapter;
+import com.musicretrieval.beatsbear.Classifier.AudioFeatures;
+import com.musicretrieval.beatsbear.Classifier.AudioFeaturizer;
+import com.musicretrieval.beatsbear.Classifier.GenreClassifier;
 import com.musicretrieval.beatsbear.DialogFragments.AddSongDialogFragment;
 import com.musicretrieval.beatsbear.Models.Song;
 import com.musicretrieval.beatsbear.Models.SongFeatures;
@@ -29,6 +33,8 @@ import com.musicretrieval.beatsbear.R;
 import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
 import be.tarsos.dsp.StopAudioProcessor;
 import be.tarsos.dsp.beatroot.Agent;
 import be.tarsos.dsp.beatroot.AgentList;
@@ -37,12 +43,14 @@ import be.tarsos.dsp.beatroot.EventList;
 import be.tarsos.dsp.beatroot.Induction;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.mfcc.MFCC;
 import be.tarsos.dsp.onsets.ComplexOnsetDetector;
 import be.tarsos.dsp.onsets.OnsetHandler;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,15 +73,12 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Song> recommendedRelaxingSongs;
     private ArrayList<Song> recommendedActivatingSongs;
     private PlaylistAdapter adapter;
-    private LinearLayoutManager layoutManager;
 
-    private AudioDispatcher dispatcher;
-
-    private final int SAMPLE_RATE = 44100;
-
-    public enum PLAYLISTTYPE { PLAYALL, PLAYRELAXING, PLAYACTIVATING }
+    private enum PLAYLISTTYPE { PLAYALL, PLAYRELAXING, PLAYACTIVATING }
 
     private PLAYLISTTYPE playlistType;
+
+    private static boolean doneFeaturizing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         recommendedRelaxingSongs = new ArrayList<>();
         recommendedActivatingSongs = new ArrayList<>();
         adapter = new PlaylistAdapter(this, songs);
-        layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         playlistView.setAdapter(adapter);
         playlistView.setLayoutManager(layoutManager);
     }
@@ -107,27 +112,27 @@ public class MainActivity extends AppCompatActivity {
                 button.setBackgroundResource(R.drawable.button_bg_selected);
                 button.setTextColor(Color.WHITE);
                 relaxingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                relaxingButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                relaxingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 activatingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                activatingButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                activatingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 playlistType = PLAYLISTTYPE.PLAYALL;
                 break;
             case R.id.main_relaxing_button:
                 button.setBackgroundResource(R.drawable.button_bg_selected);
                 button.setTextColor(Color.WHITE);
                 allButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                allButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                allButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 activatingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                activatingButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                activatingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 playlistType = PLAYLISTTYPE.PLAYRELAXING;
                 break;
             case R.id.main_activating_button:
                 button.setBackgroundResource(R.drawable.button_bg_selected);
                 button.setTextColor(Color.WHITE);
                 allButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                allButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                allButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 relaxingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                relaxingButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                relaxingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                 playlistType = PLAYLISTTYPE.PLAYACTIVATING;
                 break;
         }
@@ -224,6 +229,8 @@ public class MainActivity extends AppCompatActivity {
                 songs.add(new Song(thisId, data, thisTitle, thisArtist, thisAlbum, thisDuration, features));
 
             } while (musicCursor.moveToNext());
+
+            musicCursor.close();
         }
     }
 
@@ -232,9 +239,16 @@ public class MainActivity extends AppCompatActivity {
      */
     private void recommendSongs() {
         for (Song song : songs) {
-            int thisBpm = song.getBpm();
+            SongFeatures features = song.getFeatures();
 
-            if (thisBpm < Song.RELAXING_THRESHOLD) {
+
+            System.out.println("Song " + song.getTitle() + " is " + features.genre);
+            boolean relaxing = (features.bpm < Song.RELAXING_THRESHOLD) &&
+                                (features.genre.equals("Blues") ||
+                                features.genre.equals("Classical") ||
+                                features.genre.equals("Country"));
+
+            if (relaxing) {
                 recommendedRelaxingSongs.add(song);
             } else {
                 recommendedActivatingSongs.add(song);
@@ -253,36 +267,59 @@ public class MainActivity extends AppCompatActivity {
 
         new AndroidFFMPEGLocator(this);
 
+        AudioDispatcher dispatcher;
+
         final EventList onsetList = new EventList();
+
+        final int SAMPLE_RATE = 44100;
         final int buffSize = 1024;
         final int overlap = buffSize/2;
 
-        dispatcher = AudioDispatcherFactory.fromPipe(path, SAMPLE_RATE, buffSize, overlap);
+        final AudioFeaturizer audioFeaturizer = new AudioFeaturizer();
+        final ArrayList<Instance> songSampleData = new ArrayList<>();
 
-        // Detect the beat intervals
-        ComplexOnsetDetector c = new ComplexOnsetDetector(buffSize, 0.3, 256.0/SAMPLE_RATE*4.0, -70);
-        c.setHandler(new OnsetHandler() {
-            @Override
-            public void handleOnset(double v, double v1) {
-                double roundedTime = Math.round(v * 100)/100.0;
-                Event e = newEvent(roundedTime, 0);
-                e.salience = v1;
-                onsetList.add(e);
+        doneFeaturizing = false;
 
-            }
-        });
+        try {
+            dispatcher = AudioDispatcherFactory.fromPipe(path, SAMPLE_RATE, buffSize, overlap);
 
-        MFCC m = new MFCC(buffSize, SAMPLE_RATE);
+            // Sample 2.2 seconds of music at the center
+            double start = duration/1000.0/2.0;
+            double stop = start + 2.2;
+            dispatcher.skip(start);
+            dispatcher.addAudioProcessor(new StopAudioProcessor(stop));
+            // Detect the beat intervals
+            ComplexOnsetDetector c = new ComplexOnsetDetector(buffSize, 0.3, 256.0/SAMPLE_RATE*4.0, -70);
+            c.setHandler(new OnsetHandler() {
+                @Override
+                public void handleOnset(double v, double v1) {
+                    double roundedTime = Math.round(v * 100)/100.0;
+                    Event e = newEvent(roundedTime, 0);
+                    e.salience = v1;
+                    onsetList.add(e);
+                }
+            });
+            dispatcher.addAudioProcessor(c);
+            dispatcher.addAudioProcessor(new AudioProcessor() {
+                @Override
+                public boolean process(AudioEvent audioEvent) {
+                    songSampleData.add(audioFeaturizer.featurize(audioEvent, null));
+                    return true;
+                }
 
-        // Sample 5 seconds of music
-        dispatcher.addAudioProcessor(new StopAudioProcessor(5));
-        dispatcher.addAudioProcessor(c);
-        dispatcher.addAudioProcessor(m);
+                @Override
+                public void processingFinished() {
+                    doneFeaturizing = true;
+                }
+            });
 
-        dispatcher.run();
+            dispatcher.run();
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+        }
 
         // Wait for processing to finish
-        while (!dispatcher.isStopped());
+        while (!doneFeaturizing) { }
 
         // Find the best agent that fits
         AgentList agents = Induction.beatInduction(onsetList);
@@ -290,18 +327,28 @@ public class MainActivity extends AppCompatActivity {
         Agent best = agents.bestAgent();
         if (best != null) {
             best.fillBeats(-1.0);
-            Log.d(TAG, "beatcount = " + String.valueOf(best.beatCount));
-            Log.d(TAG, "beatinterval = " + String.valueOf(best.beatInterval));
-            Log.d(TAG, "beattime = " + String.valueOf(best.beatTime));
-            Log.d(TAG, "temposcore = " + String.valueOf(best.tempoScore));
-            Log.d(TAG, "topscoretime = " + String.valueOf(best.topScoreTime));
             features.bpm = (int) ((1.0/best.beatInterval)*60.0);
         } else {
             // Arbitrary BPM that isn't 0
             features.bpm = 60;
         }
 
-        features.mfcc = m.getMFCC();
+        Instance featureVals = new DenseInstance(AudioFeatures.Features.length+1);
+        Instances data = new Instances(audioFeaturizer.getDataset());
+        featureVals.setDataset(data);
+
+        // take the average
+        for (int i = 0; i < AudioFeatures.Features.length; i++) {
+            double avgC = 0.0;
+            for (Instance ins : songSampleData) {
+                avgC += ins.value(i)/songSampleData.size();
+            }
+            featureVals.setValue(i, avgC);
+        }
+
+        GenreClassifier classifier = new GenreClassifier(this);
+
+        features.genre = classifier.classify(featureVals);
 
         return features;
     }
