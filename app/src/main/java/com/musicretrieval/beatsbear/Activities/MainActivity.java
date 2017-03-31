@@ -241,8 +241,6 @@ public class MainActivity extends AppCompatActivity {
         for (Song song : songs) {
             SongFeatures features = song.getFeatures();
 
-
-            System.out.println("Song " + song.getTitle() + " is " + features.genre);
             boolean relaxing = (features.bpm < Song.RELAXING_THRESHOLD) &&
                                 (features.genre.equals("Blues") ||
                                 features.genre.equals("Classical") ||
