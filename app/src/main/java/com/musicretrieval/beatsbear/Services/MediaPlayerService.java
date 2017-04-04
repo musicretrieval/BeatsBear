@@ -66,7 +66,8 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
     public static final String ACTION_PREVIOUS = "com.musicretrieval.beatsbear.ACTION_PREVIOUS";
     public static final String ACTION_NEXT = "com.musicretrieval.beatsbear.ACTION_NEXT";
     public static final String ACTION_STOP = "com.musicretrieval.beatsbear.ACTION_STOP";
-    public static final String SONG_CURRENT_TIME = "com.musicretrieval.beatsbear.SONG_CURRENT_TIME";
+    public static final String CURRENT_TIME = "com.musicretrieval.beatsbear.CURRENT_TIME";
+    public static final String CURRENT_SONG = "com.musicretrieval.beatsbear.CURRENT_SONG";
 
     //MediaSession
     private MediaSessionManager mediaSessionManager;
@@ -93,39 +94,8 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         registerBecomingNoisyReceiver();
         // Listen for new Audio to play -- BroadcastReceiver
         register_playNewAudio();
-    }
 
-    private void initMediaPlayer() {
         new AndroidFFMPEGLocator(this);
-
-        tempo = 1.0;
-        wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
-
-        dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
-        AndroidAudioPlayer audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
-        AudioProcessor processor = new AudioProcessor() {
-            @Override
-            public boolean process(AudioEvent audioEvent) {
-                if (playing) {
-                    updateTimes();
-                }
-                return true;
-            }
-
-            @Override
-            public void processingFinished() {
-                if (playing) {
-                    next();
-                    updateMetaData();
-                    buildNotification(PlaybackStatus.PLAYING);
-                }
-            }
-        };
-
-        wsola.setDispatcher(dispatcher);
-        dispatcher.addAudioProcessor(wsola);
-        dispatcher.addAudioProcessor(audioPlayer);
-        dispatcher.addAudioProcessor(processor);
     }
 
     private void initMediaSession() throws RemoteException {
@@ -204,10 +174,16 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         });
     }
 
-    public void updateTimes() {
+    public void broadcastTime() {
         currentTime = (long) dispatcher.secondsProcessed();
-        Intent intent = new Intent(SONG_CURRENT_TIME);
-        intent.putExtra("SONG_CURRENT_TIME", currentTime);
+        Intent intent = new Intent(CURRENT_TIME);
+        intent.putExtra("CURRENT_TIME", currentTime);
+        sendBroadcast(intent);
+    }
+
+    public void broadcastSong() {
+        Intent intent = new Intent(CURRENT_SONG);
+        intent.putExtra("CURRENT_SONG", currentSong);
         sendBroadcast(intent);
     }
 
@@ -220,6 +196,47 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
     }
 
+    public void play(long seconds) {
+        try {
+            playing = true;
+            tempo = currentBpm / currentSong.getFeatures().bpm;
+            wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
+            dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
+            dispatcher.skip(seconds);
+
+            AndroidAudioPlayer audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
+            AudioProcessor processor = new AudioProcessor() {
+                @Override
+                public boolean process(AudioEvent audioEvent) {
+                    if (playing) {
+                        broadcastTime();
+                    }
+                    return true;
+                }
+
+                @Override
+                public void processingFinished() {
+                    if (playing) {
+                        playing = false;
+                        next();
+                        play(0);
+                        updateMetaData();
+                        buildNotification(PlaybackStatus.PLAYING);
+                    }
+                }
+            };
+
+            wsola.setDispatcher(dispatcher);
+            dispatcher.addAudioProcessor(wsola);
+            dispatcher.addAudioProcessor(audioPlayer);
+            dispatcher.addAudioProcessor(processor);
+            new Thread(dispatcher, "Audio Dispatcher").start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            stopSelf();
+        }
+    }
+
     public void next() {
         if (songIndex == songs.size() - 1) {
             //if last in playlist
@@ -230,14 +247,16 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
             currentSong = songs.get(++songIndex);
         }
 
+        currentTime = 0;
+
+        broadcastSong();
+        broadcastTime();
+
         //Update stored index
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);
         if (playing && dispatcher != null) {
             stop();
-            initMediaPlayer();
-            play(0);
-        } else {
-            currentTime = 0;
+            play(currentTime);
         }
     }
 
@@ -252,56 +271,24 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
             currentSong = songs.get(--songIndex);
         }
 
+        currentTime = 0;
+
+        broadcastSong();
+        broadcastTime();
+
         //Update stored index
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);
         if (playing && dispatcher != null) {
             stop();
-            initMediaPlayer();
-            play(0);
-        } else {
-            currentTime = 0;
+            play(currentTime);
         }
     }
 
     public void seek(long seconds) {
-        stop();
-        play(seconds);
-    }
-
-    public void play(long seconds) {
-        try {
-            playing = true;
-            tempo = currentBpm / currentSong.getFeatures().bpm;
-            dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
-            AndroidAudioPlayer audioPlayer = new AndroidAudioPlayer(dispatcher.getFormat(), wsola.getInputBufferSize(), AudioManager.STREAM_MUSIC);
-            AudioProcessor processor = new AudioProcessor() {
-                @Override
-                public boolean process(AudioEvent audioEvent) {
-                    if (playing) {
-                        updateTimes();
-                    }
-                    return true;
-                }
-
-                @Override
-                public void processingFinished() {
-                    if (playing) {
-                        next();
-                        updateMetaData();
-                        buildNotification(PlaybackStatus.PLAYING);
-                    }
-                }
-            };
-
-            wsola.setDispatcher(dispatcher);
-            dispatcher.skip(seconds);
-            dispatcher.addAudioProcessor(wsola);
-            dispatcher.addAudioProcessor(audioPlayer);
-            dispatcher.addAudioProcessor(processor);
-            new Thread(dispatcher, "Audio Dispatcher").start();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            stopSelf();
+        currentTime = seconds;
+        if (playing && dispatcher != null) {
+            stop();
+            play(currentTime);
         }
     }
 
@@ -337,8 +324,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 // resume playback
-                if (dispatcher == null) initMediaPlayer();
-                else if (!playing) play(0);
+                if (!playing) play(0);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media dispatcherThread
@@ -396,7 +382,6 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         if (mediaSessionManager == null) {
             try {
                 initMediaSession();
-                initMediaPlayer();
                 play(0);
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -506,7 +491,6 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
             //A PLAY_NEW_AUDIO action received
             //reset mediaPlayer to play the new Audio
             stop();
-            initMediaPlayer();
             updateMetaData();
             buildNotification(PlaybackStatus.PLAYING);
 

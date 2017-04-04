@@ -58,11 +58,19 @@ public class PlayingFragment extends Fragment {
     private int currentBpm = 0;
     private long currentTime;
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private BroadcastReceiver currentTimeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            currentTime = (long) intent.getExtras().get("SONG_CURRENT_TIME");
+            currentTime = intent.getLongExtra("CURRENT_TIME", 0);
             updateSeekBarUI();
+        }
+    };
+
+    private BroadcastReceiver currentSongReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            song = (Song) intent.getSerializableExtra("CURRENT_SONG");
+            updateSongInfoUI();
         }
     };
 
@@ -85,7 +93,8 @@ public class PlayingFragment extends Fragment {
             song = (Song) getArguments().getSerializable(SONG_PARAM);
             currentBpm = song.getFeatures().bpm;
         }
-        getActivity().registerReceiver(receiver, new IntentFilter(MediaPlayerService.SONG_CURRENT_TIME));
+        getActivity().registerReceiver(currentTimeReceiver, new IntentFilter(MediaPlayerService.CURRENT_TIME));
+        getActivity().registerReceiver(currentSongReceiver, new IntentFilter(MediaPlayerService.CURRENT_SONG));
     }
 
     @Override
@@ -106,7 +115,7 @@ public class PlayingFragment extends Fragment {
         songSeekBar.setMax(1000);
         songSeekBar.setProgress(0);
 
-        updateSongInfoUI(song);
+        updateSongInfoUI();
 
         setIncreaseTempoOnTouchListener();
         setDecreaseTempoOnTouchListener();
@@ -123,7 +132,8 @@ public class PlayingFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(receiver);
+        getActivity().unregisterReceiver(currentTimeReceiver);
+        getActivity().unregisterReceiver(currentSongReceiver);
     }
 
     @OnClick(R.id.play_play_btn)
@@ -257,12 +267,12 @@ public class PlayingFragment extends Fragment {
         seekListener = null;
     }
 
-    public void updateSongInfoUI(final Song s) {
+    public void updateSongInfoUI() {
         // Things that need to be updated on UI thread, otherwise it will crash
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                songTitle.setText(s.getTitle());
+                songTitle.setText(song.getTitle());
                 String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
                 songTempo.setText(tempoString);
             }

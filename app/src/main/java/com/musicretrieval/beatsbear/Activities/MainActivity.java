@@ -1,6 +1,5 @@
 package com.musicretrieval.beatsbear.Activities;
 
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -77,6 +76,23 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
     private PlaylistFragment playlistFragment = null;
     private PlayingFragment playingFragment = null;
+
+    //Binding this Client to the AudioPlayer Service
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+            player = binder.getService();
+            serviceBound = true;
+            Toast.makeText(MainActivity.this, "Playing", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,27 +173,12 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
     @Override
     public void onNextPressed() {
-        if (songIndex == songs.size() - 1) {
-            songIndex = 0;
-        } else {
-            ++songIndex;
-        }
         player.next();
-        playingFragment.updateSongInfoUI(currentSongs.get(songIndex));
     }
 
     @Override
     public void onPrevPressed() {
-        if (songIndex == 0) {
-            //if first in playlist
-            //set index to the last of audioList
-            songIndex = songs.size() - 1;
-        } else {
-            //get previous in playlist
-            --songIndex;
-        }
         player.previous();
-        playingFragment.updateSongInfoUI(currentSongs.get(songIndex));
     }
 
     @Override
@@ -190,22 +191,29 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         player.seek(seconds);
     }
 
-    //Binding this Client to the AudioPlayer Service
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
-            player = binder.getService();
-            serviceBound = true;
-            Toast.makeText(MainActivity.this, "Playing", Toast.LENGTH_SHORT).show();
-        }
+    private void showController() {
+        FragmentManager fm = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+        Song currentSong = currentSongs.get(songIndex);
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            serviceBound = false;
+        playingFragment = PlayingFragment.newInstance(currentSong);
+        if (!playingFragment.isVisible()) {
+            ft.add(R.id.fragment_container, playingFragment);
+            ft.addToBackStack("CURRENTLY_PLAYING");
+            ft.commit();
         }
-    };
+    }
+
+    private void showPlaylist() {
+        FragmentManager fm = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+
+        playlistFragment = PlaylistFragment.newInstance((ArrayList<Song>) currentSongs.clone());
+        if (!playlistFragment.isVisible()) {
+            ft.add(R.id.fragment_container, playlistFragment);
+            ft.commit();
+        }
+    }
 
     /**
      * Gets all songs
@@ -252,9 +260,9 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
             SongFeatures features = song.getFeatures();
 
             boolean relaxing = (features.bpm < Song.RELAXING_THRESHOLD) &&
-                    (features.genre.equals("Blues") ||
-                            features.genre.equals("Classical") ||
-                            features.genre.equals("Country"));
+                                (features.genre.equals("Blues") ||
+                                 features.genre.equals("Classical") ||
+                                 features.genre.equals("Country"));
 
             if (relaxing) {
                 relaxingSongs.add(song);
@@ -416,25 +424,5 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         }
 
         showController();
-    }
-
-    private void showController() {
-        FragmentManager fm = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-        Song currentSong = currentSongs.get(songIndex);
-
-        playingFragment = PlayingFragment.newInstance(currentSong);
-        ft.add(R.id.fragment_container, playingFragment);
-        ft.addToBackStack("CURRENTLY_PLAYING");
-        ft.commit();
-    }
-
-    private void showPlaylist() {
-        FragmentManager fm = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-
-        playlistFragment = PlaylistFragment.newInstance((ArrayList<Song>) currentSongs.clone());
-        ft.add(R.id.fragment_container, playlistFragment);
-        ft.commit();
     }
 }

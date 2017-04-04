@@ -1,7 +1,6 @@
 package com.musicretrieval.beatsbear.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.musicretrieval.beatsbear.Activities.Play;
 import com.musicretrieval.beatsbear.Models.Song;
 import com.musicretrieval.beatsbear.R;
 import com.musicretrieval.beatsbear.Utils.CircularTextView;

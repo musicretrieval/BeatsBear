@@ -6,7 +6,7 @@
     android:layout_marginBottom="16dp">
 
     <com.musicretrieval.beatsbear.Utils.CircularTextView
-        android:text="bpm"
+        android:text="@string/song_bpm"
         android:layout_height="wrap_content"
         android:id="@+id/playlistitem_bpm"
         android:layout_width="64dp"
@@ -21,27 +21,31 @@
         android:layout_weight="1">
 
         <TextView
-            android:text="songname"
+            android:text="@string/song_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/playlistitem_songname"
-            android:layout_weight="1"
             android:gravity="bottom" />
 
         <TextView
-            android:text="artist"
+            android:text="@string/song_artist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/playlistitem_artist"
-            android:layout_weight="1"
             android:gravity="top" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/playlistitem_genre"
-        android:layout_width="6dp"
-        android:layout_height="16dp"
-        android:layout_gravity="center"
-        android:layout_weight="0.1" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1" >
+        <ImageView
+            android:id="@+id/playlistitem_genre"
+            android:layout_width="24dp"
+            android:layout_height="20dp"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/song_genre" />
+    </RelativeLayout>
+
 
 </LinearLayout>

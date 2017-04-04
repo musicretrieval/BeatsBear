@@ -10,11 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="com.musicretrieval.beatsbear.Activities.Play"
         android:layout_margin="8dp">
 
         <TextView
-            android:text="title"
+            android:text="@string/song_default_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/play_song_title"
@@ -23,15 +22,16 @@
         <ImageView
             android:id="@+id/play_song_image"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_weight="1.00"
-            app:srcCompat="@mipmap/ic_launcher" />
+            app:srcCompat="@mipmap/ic_launcher"
+            android:contentDescription="@string/song_album_art" />
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tempo"
+            android:text="@string/song_tempo"
             android:textAlignment="center"
             android:textStyle="bold" />
 
@@ -53,7 +53,7 @@
             </RelativeLayout>
 
             <TextView
-                android:text="BPM"
+                android:text="@string/song_bpm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_tempo"
@@ -80,7 +80,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="0"
+                android:text="@string/song_zero"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_current_song_time"
@@ -88,7 +88,7 @@
                 android:textAlignment="viewStart" />
 
             <TextView
-                android:text="0"
+                android:text="@string/song_zero"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_current_song_total_time"
@@ -107,7 +107,8 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:baselineAligned="false">
 
             <RelativeLayout
                 android:layout_width="wrap_content"

@@ -23,11 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Activities.Play"
-            android:label="@string/title_activity_play"
-            android:parentActivityName=".Activities.MainActivity"
-            android:screenOrientation="portrait"/>
 
         <service
             android:name=".Services.MediaPlayerService"
