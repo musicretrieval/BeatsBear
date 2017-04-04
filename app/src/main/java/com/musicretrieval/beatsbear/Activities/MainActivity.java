@@ -6,6 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
@@ -22,10 +26,13 @@ import com.musicretrieval.beatsbear.Classifier.AudioFeaturizer;
 import com.musicretrieval.beatsbear.Classifier.GenreClassifier;
 import com.musicretrieval.beatsbear.Models.Song;
 import com.musicretrieval.beatsbear.Models.SongFeatures;
+import com.musicretrieval.beatsbear.Peripheral.StepDetector;
+import com.musicretrieval.beatsbear.Peripheral.StepListener;
 import com.musicretrieval.beatsbear.R;
 import com.musicretrieval.beatsbear.Services.MediaPlayerService;
 import com.musicretrieval.beatsbear.Utils.PlaylistType;
 import com.musicretrieval.beatsbear.Utils.StorageUtil;
+import com.musicretrieval.beatsbear.Utils.TempoAdjustmentType;
 
 import java.util.ArrayList;
 
@@ -55,7 +62,9 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
                                                                 PlayingFragment.OnPrevListener,
                                                                 PlayingFragment.OnPauseListener,
                                                                 PlayingFragment.OnTempoListener,
-                                                                PlayingFragment.OnSeekListener {
+                                                                PlayingFragment.OnSeekListener,
+                                                                SensorEventListener,
+                                                                StepListener {
 
     @BindView(R.id.playlist_progress)       ProgressBar playlistProgress;
 
@@ -66,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     private ArrayList<Song> activatingSongs;
     private ArrayList<Song> currentSongs;
 
+    private TempoAdjustmentType tempoAdjustmentType;
+
     private int songIndex = 0;
 
     private static boolean doneFeaturizing = false;
@@ -73,6 +84,15 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     private MediaPlayerService player;
     boolean serviceBound = false;
     public static final String Broadcast_PLAY_NEW_AUDIO = "musicretrieval.beatsbear.PlayNewAudio";
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private StepDetector stepDetector;
+    private long steps;
+    private long lastStepTime = 0;
+    private long[] lastStepDeltas = {-1, -1, -1, -1};
+    private int lastStepDeltasIndex = 0;
+    private long pace = 0;
 
     private PlaylistFragment playlistFragment = null;
     private PlayingFragment playingFragment = null;
@@ -104,6 +124,13 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         relaxingSongs = new ArrayList<>();
         activatingSongs = new ArrayList<>();
         currentSongs = songs;
+
+        tempoAdjustmentType = TempoAdjustmentType.MANUAL;
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        stepDetector = new StepDetector();
+        stepDetector.registerListener(this);
      }
 
     @Override
@@ -112,6 +139,13 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         if (songs.isEmpty())
             new RecommendSongsTask().execute();
         showPlaylist();
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -134,6 +168,47 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
             //service is active
             player.stopSelf();
         }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    @Override
+    public void step(long timeNs) {
+        long thisStepTime = System.currentTimeMillis();
+        steps++;
+
+        if (lastStepTime > 0) {
+            long delta = thisStepTime - lastStepTime;
+            lastStepDeltas[lastStepDeltasIndex] = delta;
+            lastStepDeltasIndex = (lastStepDeltasIndex + 1) % lastStepDeltas.length;
+
+            long sum = 0;
+            boolean isMeaningful = true;
+            for (int i = 0; i < lastStepDeltas.length; i++) {
+                if (lastStepDeltas[i] < 0) {
+                    isMeaningful = false;
+                    break;
+                }
+                sum += lastStepDeltas[i];
+            }
+            if (isMeaningful && sum > 0) {
+                long avg = sum / lastStepDeltas.length;
+                pace = 60*1000 / avg;
+            }
+            else {
+                pace = -1;
+            }
+        }
+        lastStepTime = thisStepTime;
+        System.out.println("STEPS TAKEN " + String.valueOf(steps));
     }
 
     @Override
