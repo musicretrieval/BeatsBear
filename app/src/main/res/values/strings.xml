@@ -18,4 +18,5 @@
     <string name="song_name">Song Name</string>
     <string name="song_artist">Song Artist</string>
     <string name="song_genre">Song Genre</string>
+    <string name="song_match_pace">Match Pace</string>
 </resources>

@@ -4,9 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import com.musicretrieval.beatsbear.Models.Song;
 import com.musicretrieval.beatsbear.R;
 import com.musicretrieval.beatsbear.Services.MediaPlayerService;
+import com.musicretrieval.beatsbear.Utils.TempoAdjustmentType;
 import com.musicretrieval.beatsbear.Utils.TimeUtil;
 
 import java.util.Locale;
@@ -38,13 +41,18 @@ public class PlayingFragment extends Fragment {
     private OnPauseListener pauseListener;
     private OnTempoListener tempoListener;
     private OnSeekListener seekListener;
+    private OnTempoAdjustmentTypeListener tempoAdjustmentTypeListener;
 
+    @BindView(R.id.play_manual_tempo)       View manualView;
     @BindView(R.id.play_increase_tempo_btn) Button increaseTempoBtn;
     @BindView(R.id.play_decrease_tempo_btn) Button decreaseTempoBtn;
-    @BindView(R.id.play_tempo)              TextView songTempo;
+    @BindView(R.id.play_tempo)              TextView songTempoManual;
+
+    @BindView(R.id.play_pace_tempo)         View paceView;
+    @BindView(R.id.play_tempo_pace)         TextView songTempoPace;
+
     @BindView(R.id.play_song_title)         TextView songTitle;
     @BindView(R.id.play_song_image)         ImageView songImage;
-
     @BindView(R.id.play_current_song_time)  TextView currentSongTimeTv;
     @BindView(R.id.play_current_song_total_time) TextView currentSongTotalTimeTv;
     @BindView(R.id.play_seek_bar)           SeekBar songSeekBar;
@@ -54,15 +62,20 @@ public class PlayingFragment extends Fragment {
     @BindView(R.id.play_rewind_btn)         Button songRewindBtn;
     @BindView(R.id.play_forward_btn)        Button songForwardBtn;
 
+    @BindView(R.id.play_manual_button)      Button manualTempoBtn;
+    @BindView(R.id.play_pace_button)        Button paceTempoBtn;
+
     private double tempo = 1.0;
     private int currentBpm = 0;
     private long currentTime;
 
-    private BroadcastReceiver currentTimeReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver currentTimingInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             currentTime = intent.getLongExtra("CURRENT_TIME", 0);
-            updateSeekBarUI();
+            currentBpm = intent.getIntExtra("CURRENT_BPM", 0);
+            tempo = (currentBpm/ (double) (song.getFeatures().bpm));
+            updateTimingUI();
         }
     };
 
@@ -93,7 +106,7 @@ public class PlayingFragment extends Fragment {
             song = (Song) getArguments().getSerializable(SONG_PARAM);
             currentBpm = song.getFeatures().bpm;
         }
-        getActivity().registerReceiver(currentTimeReceiver, new IntentFilter(MediaPlayerService.CURRENT_TIME));
+        getActivity().registerReceiver(currentTimingInfoReceiver, new IntentFilter(MediaPlayerService.CURRENT_TIMING_INFO));
         getActivity().registerReceiver(currentSongReceiver, new IntentFilter(MediaPlayerService.CURRENT_SONG));
     }
 
@@ -132,7 +145,7 @@ public class PlayingFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(currentTimeReceiver);
+        getActivity().unregisterReceiver(currentTimingInfoReceiver);
         getActivity().unregisterReceiver(currentSongReceiver);
     }
 
@@ -168,14 +181,30 @@ public class PlayingFragment extends Fragment {
         }
     }
 
+    @OnClick(R.id.play_manual_button)
+    public void manual() {
+        toggleTempoAdjustment(manualTempoBtn);
+        if (tempoAdjustmentTypeListener != null) {
+            tempoAdjustmentTypeListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.MANUAL);
+        }
+    }
+
+    @OnClick(R.id.play_pace_button)
+    public void pace() {
+        toggleTempoAdjustment(paceTempoBtn);
+        if (tempoAdjustmentTypeListener != null) {
+            tempoAdjustmentTypeListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.PACE);
+        }
+    }
+
     @OnClick(R.id.play_increase_tempo_btn)
     public void increaseTempo() {
         if (tempoListener != null) {
             tempo += 0.01;
-            tempoListener.onTempoPressed(tempo);
+            tempoListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-            songTempo.setText(tempoString);
+            songTempoManual.setText(tempoString);
         }
     }
 
@@ -183,30 +212,51 @@ public class PlayingFragment extends Fragment {
     public void decreaseTempo() {
         if (tempoListener != null) {
             tempo -= 0.01;
-            tempoListener.onTempoPressed(tempo);
+            tempoListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-            songTempo.setText(tempoString);
+            songTempoManual.setText(tempoString);
         }
     }
 
     public void increaseTempoLong() {
         if (tempoListener != null) {
             tempo += 0.05;
-            tempoListener.onTempoPressed(tempo);
+            tempoListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-            songTempo.setText(tempoString);
+            songTempoManual.setText(tempoString);
         }
     }
 
     public void decreaseTempoLong() {
         if (tempoListener != null) {
             tempo -= 0.05;
-            tempoListener.onTempoPressed(tempo);
+            tempoListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-            songTempo.setText(tempoString);
+            songTempoManual.setText(tempoString);
+        }
+    }
+
+    public void toggleTempoAdjustment(Button button) {
+        switch (button.getId()) {
+            case R.id.play_manual_button:
+                button.setBackgroundResource(R.drawable.button_bg_selected);
+                button.setTextColor(Color.WHITE);
+                paceTempoBtn.setBackgroundResource(R.drawable.button_bg_not_selected);
+                paceTempoBtn.setTextColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+                manualView.setVisibility(View.VISIBLE);
+                paceView.setVisibility(View.GONE);
+                break;
+            case R.id.play_pace_button:
+                button.setBackgroundResource(R.drawable.button_bg_selected);
+                button.setTextColor(Color.WHITE);
+                manualTempoBtn.setBackgroundResource(R.drawable.button_bg_not_selected);
+                manualTempoBtn.setTextColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+                manualView.setVisibility(View.GONE);
+                paceView.setVisibility(View.VISIBLE);
+                break;
         }
     }
 
@@ -254,6 +304,13 @@ public class PlayingFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnSeekListener");
         }
+
+        if (context instanceof OnTempoAdjustmentTypeListener) {
+            tempoAdjustmentTypeListener = (OnTempoAdjustmentTypeListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnTempoAdjustmentTypeListener");
+        }
     }
 
     @Override
@@ -265,6 +322,7 @@ public class PlayingFragment extends Fragment {
         pauseListener = null;
         tempoListener = null;
         seekListener = null;
+        tempoAdjustmentTypeListener = null;
     }
 
     public void updateSongInfoUI() {
@@ -274,12 +332,12 @@ public class PlayingFragment extends Fragment {
             public void run() {
                 songTitle.setText(song.getTitle());
                 String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
-                songTempo.setText(tempoString);
+                songTempoManual.setText(tempoString);
             }
         });
     }
 
-    void updateSeekBarUI() {
+    void updateTimingUI() {
         // Things that need to be updated on UI thread, otherwise it will crash
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -290,6 +348,9 @@ public class PlayingFragment extends Fragment {
                 currentSongTimeTv.setText(TimeUtil.secondsToMMSS(currentTime));
                 currentSongTotalTimeTv.setText(TimeUtil.secondsToMMSS(totalTime));
                 songSeekBar.setProgress(progress);
+                songTempoPace.setText(String.valueOf(currentBpm));
+                String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
+                songTempoManual.setText(tempoString);
             }
         });
     }
@@ -380,7 +441,7 @@ public class PlayingFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 currentTime = (long) (seekBar.getProgress()/1000.0 * (song.getDuration()/1000.0));
                 seekListener.onSeekPressed(currentTime);
-                updateSeekBarUI();
+                updateTimingUI();
             }
         });
     }
@@ -402,10 +463,14 @@ public class PlayingFragment extends Fragment {
     }
 
     public interface OnTempoListener {
-        void onTempoPressed(double amount);
+        void onTempoChanged(double amount);
     }
 
     public interface OnSeekListener {
         void onSeekPressed(long seconds);
+    }
+
+    public interface OnTempoAdjustmentTypeListener {
+        void onTempoAdjustmentTypeChanged(TempoAdjustmentType type);
     }
 }

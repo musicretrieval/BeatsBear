@@ -51,7 +51,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 
     private double tempo = 1.0;
     private long currentTime;
-    private double currentBpm;
+    private int currentBpm;
     private boolean playing;
 
     private final int SAMPLE_RATE = 44100;
@@ -66,7 +66,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
     public static final String ACTION_PREVIOUS = "com.musicretrieval.beatsbear.ACTION_PREVIOUS";
     public static final String ACTION_NEXT = "com.musicretrieval.beatsbear.ACTION_NEXT";
     public static final String ACTION_STOP = "com.musicretrieval.beatsbear.ACTION_STOP";
-    public static final String CURRENT_TIME = "com.musicretrieval.beatsbear.CURRENT_TIME";
+    public static final String CURRENT_TIMING_INFO = "com.musicretrieval.beatsbear.CURRENT_TIMING_INFO";
     public static final String CURRENT_SONG = "com.musicretrieval.beatsbear.CURRENT_SONG";
 
     //MediaSession
@@ -174,10 +174,11 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         });
     }
 
-    public void broadcastTime() {
+    public void broadcastTimingInfo() {
         currentTime = (long) dispatcher.secondsProcessed();
-        Intent intent = new Intent(CURRENT_TIME);
+        Intent intent = new Intent(CURRENT_TIMING_INFO);
         intent.putExtra("CURRENT_TIME", currentTime);
+        intent.putExtra("CURRENT_BPM", currentBpm);
         sendBroadcast(intent);
     }
 
@@ -196,10 +197,19 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
     }
 
+    public void updateBPM(int amount) {
+        currentBpm = amount;
+        tempo = (currentBpm / (double) (currentSong.getFeatures().bpm));
+        int SEQUENCE_MODEL = 82;
+        int WINDOW_MODEL = 28;
+        int OVERLAP_MODEL = 12;
+        wsola.setParameters(new WaveformSimilarityBasedOverlapAdd.Parameters(tempo, SAMPLE_RATE, SEQUENCE_MODEL, WINDOW_MODEL, OVERLAP_MODEL));
+    }
+
     public void play(long seconds) {
         try {
             playing = true;
-            tempo = currentBpm / currentSong.getFeatures().bpm;
+            tempo = (currentBpm / ((double) currentSong.getFeatures().bpm));
             wsola = new WaveformSimilarityBasedOverlapAdd(WaveformSimilarityBasedOverlapAdd.Parameters.musicDefaults(tempo, SAMPLE_RATE));
             dispatcher = AudioDispatcherFactory.fromPipe(currentSong.getData(), SAMPLE_RATE , wsola.getInputBufferSize(), wsola.getOverlap());
             dispatcher.skip(seconds);
@@ -209,7 +219,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
                 @Override
                 public boolean process(AudioEvent audioEvent) {
                     if (playing) {
-                        broadcastTime();
+                        broadcastTimingInfo();
                     }
                     return true;
                 }
@@ -250,7 +260,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         currentTime = 0;
 
         broadcastSong();
-        broadcastTime();
+        broadcastTimingInfo();
 
         //Update stored index
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);
@@ -274,7 +284,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         currentTime = 0;
 
         broadcastSong();
-        broadcastTime();
+        broadcastTimingInfo();
 
         //Update stored index
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);

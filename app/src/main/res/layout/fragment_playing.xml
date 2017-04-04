@@ -27,72 +27,143 @@
             app:srcCompat="@mipmap/ic_launcher"
             android:contentDescription="@string/song_album_art" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/song_tempo"
-            android:textAlignment="center"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1">
-                <Button
+                android:id="@+id/play_manual_tempo">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/play_decrease_tempo_btn"
-                    android:background="@drawable/ic_remove_black_24px"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:layout_width="64dp" />
+                    android:text="@string/song_tempo"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <Button
+                            android:id="@+id/play_decrease_tempo_btn"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/ic_remove_black_24px" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/play_tempo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/song_bpm" />
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <Button
+                            android:id="@+id/play_increase_tempo_btn"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/ic_add_black_24px" />
+                    </RelativeLayout>
+                </LinearLayout>
             </RelativeLayout>
-
-            <TextView
-                android:text="@string/song_bpm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/play_tempo"
-                android:layout_weight="1"
-                android:gravity="center" />
-
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1">
-                <Button
+                android:id="@+id/play_pace_tempo"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/play_increase_tempo_btn"
-                    android:background="@drawable/ic_add_black_24px"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:layout_width="64dp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/song_match_pace"
+                        android:textAlignment="center"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/play_tempo_pace"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/song_bpm" />
+
+                </LinearLayout>
             </RelativeLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/play_manual_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="center|fill"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selected"
+                android:text="Manual"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/play_pace_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="center|fill"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_not_selected"
+                android:text="Match Pace"
+                android:textColor="@color/colorAccent" />
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
 
             <TextView
-                android:text="@string/song_zero"
+                android:id="@+id/play_current_song_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/play_current_song_time"
                 android:layout_weight="1"
+                android:text="@string/song_zero"
                 android:textAlignment="viewStart" />
 
             <TextView
-                android:text="@string/song_zero"
+                android:id="@+id/play_current_song_total_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/play_current_song_total_time"
                 android:layout_weight="1"
+                android:text="@string/song_zero"
                 android:textAlignment="viewEnd" />
         </LinearLayout>
 

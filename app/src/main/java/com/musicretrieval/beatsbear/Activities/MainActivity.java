@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
                                                                 PlayingFragment.OnPauseListener,
                                                                 PlayingFragment.OnTempoListener,
                                                                 PlayingFragment.OnSeekListener,
+                                                                PlayingFragment.OnTempoAdjustmentTypeListener,
                                                                 SensorEventListener,
                                                                 StepListener {
 
@@ -74,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     private ArrayList<Song> relaxingSongs;
     private ArrayList<Song> activatingSongs;
     private ArrayList<Song> currentSongs;
-
-    private TempoAdjustmentType tempoAdjustmentType;
 
     private int songIndex = 0;
 
@@ -92,10 +92,13 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     private long lastStepTime = 0;
     private long[] lastStepDeltas = {-1, -1, -1, -1};
     private int lastStepDeltasIndex = 0;
-    private long pace = 0;
+    private int pace = 0;
+    private TempoAdjustmentType tempoAdjustmentType;
 
     private PlaylistFragment playlistFragment = null;
     private PlayingFragment playingFragment = null;
+
+    private Handler paceHandler = new Handler();
 
     //Binding this Client to the AudioPlayer Service
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -125,12 +128,12 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         activatingSongs = new ArrayList<>();
         currentSongs = songs;
 
-        tempoAdjustmentType = TempoAdjustmentType.MANUAL;
-
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         stepDetector = new StepDetector();
         stepDetector.registerListener(this);
+
+        tempoAdjustmentType = TempoAdjustmentType.MANUAL;
      }
 
     @Override
@@ -168,16 +171,19 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
             //service is active
             player.stopSelf();
         }
+
+        paceHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            stepDetector.updateAccel(event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     @Override
@@ -192,23 +198,27 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
             long sum = 0;
             boolean isMeaningful = true;
-            for (int i = 0; i < lastStepDeltas.length; i++) {
-                if (lastStepDeltas[i] < 0) {
+            for (long lastStepDelta : lastStepDeltas) {
+                if (lastStepDelta < 0) {
                     isMeaningful = false;
                     break;
                 }
-                sum += lastStepDeltas[i];
+                sum += lastStepDelta;
             }
             if (isMeaningful && sum > 0) {
                 long avg = sum / lastStepDeltas.length;
-                pace = 60*1000 / avg;
+                pace = (int) (60*1000 / avg);
             }
             else {
                 pace = -1;
             }
         }
+
         lastStepTime = thisStepTime;
-        System.out.println("STEPS TAKEN " + String.valueOf(steps));
+
+        if (tempoAdjustmentType == TempoAdjustmentType.PACE && pace > 60) {
+            player.updateBPM(pace);
+        }
     }
 
     @Override
@@ -218,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     }
 
     @Override
-    public void onPlaylistSwitched(PlaylistType type) {
+    public void onPlaylistTypeChanged(PlaylistType type) {
         switch (type) {
             case PLAYALL:
                 currentSongs = songs;
@@ -234,6 +244,35 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         }
 
         playlistFragment.switchPlaylist(currentSongs);
+    }
+
+    @Override
+    public void onTempoAdjustmentTypeChanged(TempoAdjustmentType type) {
+        switch (type) {
+            case MANUAL:
+                tempoAdjustmentType = TempoAdjustmentType.MANUAL;
+                paceHandler.removeCallbacksAndMessages(null);
+                break;
+            case PACE:
+                tempoAdjustmentType = TempoAdjustmentType.PACE;
+                paceHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean decrease = false;
+                        if (System.currentTimeMillis() - lastStepTime > 5000) {
+                            decrease = true;
+                        }
+
+                        if (pace > 60 && decrease) {
+                            pace--;
+                            player.updateBPM(pace);
+                        }
+
+                        paceHandler.postDelayed(this, 1000);
+                    }
+                }, 1000);
+                break;
+        }
     }
 
     @Override
@@ -257,13 +296,38 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
     }
 
     @Override
-    public void onTempoPressed(double amount) {
+    public void onTempoChanged(double amount) {
         player.updateTempo(amount);
     }
 
     @Override
     public void onSeekPressed(long seconds) {
         player.seek(seconds);
+    }
+
+    private void playAudio(ArrayList<Song> songs) {
+        pace = songs.get(songIndex).getFeatures().bpm;
+        //Check is service is active
+        if (!serviceBound) {
+            //Store Serializable audioList to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudio(songs);
+            storage.storeAudioIndex(songIndex);
+
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
+
+            startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            //Service is active
+            //Send a broadcast to the service -> PLAY_NEW_AUDIO
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudioIndex(songIndex);
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadcastIntent);
+        }
+
+        showController();
     }
 
     private void showController() {
@@ -358,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
         new AndroidFFMPEGLocator(this);
 
-        AudioDispatcher dispatcher;
+        AudioDispatcher dispatcher = null;
 
         final EventList onsetList = new EventList();
 
@@ -411,6 +475,10 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
         // Wait for processing to finish
         while (!doneFeaturizing) { }
+
+        if (dispatcher != null) {
+            dispatcher.stop();
+        }
 
         // Find the best agent that fits
         AgentList agents = Induction.beatInduction(onsetList);
@@ -475,29 +543,5 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
             // Show progress bar while recommending songs
             playlistProgress.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void playAudio(ArrayList<Song> songs) {
-        //Check is service is active
-        if (!serviceBound) {
-            //Store Serializable audioList to SharedPreferences
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudio(songs);
-            storage.storeAudioIndex(songIndex);
-
-            Intent playerIntent = new Intent(this, MediaPlayerService.class);
-
-            startService(playerIntent);
-            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-        } else {
-            //Service is active
-            //Send a broadcast to the service -> PLAY_NEW_AUDIO
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudioIndex(songIndex);
-            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
-            sendBroadcast(broadcastIntent);
-        }
-
-        showController();
     }
 }

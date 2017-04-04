@@ -142,7 +142,7 @@ public class PlaylistFragment extends Fragment {
     public void startAll() {
         toggleButtonState(allButton);
         if (playlistSwitchListener != null) {
-            playlistSwitchListener.onPlaylistSwitched(PlaylistType.PLAYALL);
+            playlistSwitchListener.onPlaylistTypeChanged(PlaylistType.PLAYALL);
         }
     }
 
@@ -150,7 +150,7 @@ public class PlaylistFragment extends Fragment {
     public void startRelaxing() {
         toggleButtonState(relaxingButton);
         if (playlistSwitchListener != null) {
-            playlistSwitchListener.onPlaylistSwitched(PlaylistType.PLAYRELAXING);
+            playlistSwitchListener.onPlaylistTypeChanged(PlaylistType.PLAYRELAXING);
         }
     }
 
@@ -158,7 +158,7 @@ public class PlaylistFragment extends Fragment {
     public void startActivating() {
         toggleButtonState(activatingButton);
         if (playlistSwitchListener != null) {
-            playlistSwitchListener.onPlaylistSwitched(PlaylistType.PLAYACTIVATING);
+            playlistSwitchListener.onPlaylistTypeChanged(PlaylistType.PLAYACTIVATING);
         }
     }
 
@@ -178,6 +178,6 @@ public class PlaylistFragment extends Fragment {
     }
 
     public interface OnPlaylistSwitchListener {
-        void onPlaylistSwitched(PlaylistType type);
+        void onPlaylistTypeChanged(PlaylistType type);
     }
 }
