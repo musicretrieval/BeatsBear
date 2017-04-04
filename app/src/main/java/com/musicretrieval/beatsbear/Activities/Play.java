@@ -35,6 +35,7 @@ import butterknife.OnClick;
 
 public class Play extends AppCompatActivity {
 
+    private static boolean currentlyPlaying = false;
     private final String TAG = "PLAY";
     private LinkedList<Song> songQ;
 
@@ -50,7 +51,7 @@ public class Play extends AppCompatActivity {
     private final int WINDOW_MODEL   = 28;
     private final int OVERLAP_MODEL  = 12;
 
-    private boolean playing;
+    private static boolean playing;
     private Song currentSong;
     private long currentTime;
     private double currentBpm;
@@ -81,15 +82,11 @@ public class Play extends AppCompatActivity {
     Button songRewindBtn;
     @BindView(R.id.play_forward_btn)
     Button songForwardBtn;
-    @BindView(R.id.play_repeat_btn)
-    Button songRepeatBtn;
-    @BindView(R.id.play_shuffle_btn)
-    Button songShuffleBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play);
+        //setContentView(R.layout.activity_play);
         ButterKnife.bind(this);
 
         songQ = new LinkedList<>();
@@ -118,6 +115,9 @@ public class Play extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (playing) {
+            stopDispatcher();
+        }
     }
 
     public void play(long seconds) {

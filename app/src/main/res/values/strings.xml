@@ -9,4 +9,7 @@
     <string name="playlist_bpm">BPM</string>
     <string name="playlist_song">Song</string>
     <string name="songlist_title">Add Song</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -55,31 +55,15 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         return context;
     }
 
-    public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        @BindView(R.id.playlistitem_songname)
-        TextView songName;
-        @BindView(R.id.playlistitem_artist)
-        TextView songArtist;
-        @BindView(R.id.playlistitem_bpm)
-        CircularTextView songBpm;
-        @BindView(R.id.playlistitem_genre)
-        ImageView songGenre;
+    public class PlaylistViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.playlistitem_songname)   TextView songName;
+        @BindView(R.id.playlistitem_artist)     TextView songArtist;
+        @BindView(R.id.playlistitem_bpm)        CircularTextView songBpm;
+        @BindView(R.id.playlistitem_genre)      ImageView songGenre;
 
         public PlaylistViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-            view.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            Intent intent = new Intent(view.getContext(), Play.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            Song song = songs.get(getAdapterPosition());
-            songs.remove(song);
-            songs.add(0, song);
-            intent.putExtra("PLAY_PLAYLIST", songs);
-            view.getContext().startActivity(intent);
         }
 
         /**

@@ -1,34 +1,32 @@
 package com.musicretrieval.beatsbear.Activities;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.IBinder;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.musicretrieval.beatsbear.Adapters.PlaylistAdapter;
 import com.musicretrieval.beatsbear.Classifier.AudioFeatures;
 import com.musicretrieval.beatsbear.Classifier.AudioFeaturizer;
 import com.musicretrieval.beatsbear.Classifier.GenreClassifier;
-import com.musicretrieval.beatsbear.DialogFragments.AddSongDialogFragment;
 import com.musicretrieval.beatsbear.Models.Song;
 import com.musicretrieval.beatsbear.Models.SongFeatures;
 import com.musicretrieval.beatsbear.R;
+import com.musicretrieval.beatsbear.Services.MediaPlayerService;
+import com.musicretrieval.beatsbear.Utils.PlaylistType;
+import com.musicretrieval.beatsbear.Utils.StorageUtil;
 
 import java.util.ArrayList;
 
@@ -47,38 +45,38 @@ import be.tarsos.dsp.onsets.ComplexOnsetDetector;
 import be.tarsos.dsp.onsets.OnsetHandler;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements  PlaylistFragment.OnPlaySongsListener,
+                                                                PlaylistFragment.OnPlaylistSwitchListener,
+                                                                PlayingFragment.OnPlayListener,
+                                                                PlayingFragment.OnNextListener,
+                                                                PlayingFragment.OnPrevListener,
+                                                                PlayingFragment.OnPauseListener,
+                                                                PlayingFragment.OnTempoListener,
+                                                                PlayingFragment.OnSeekListener {
+
+    @BindView(R.id.playlist_progress)       ProgressBar playlistProgress;
 
     private static final String TAG = "MAIN_ACTIVITY";
 
-    @BindView(R.id.main_all_button)         Button allButton;
-    @BindView(R.id.main_relaxing_button)    Button relaxingButton;
-    @BindView(R.id.main_activating_button)  Button activatingButton;
-
-    @BindView(R.id.playlist)
-    RecyclerView playlistView;
-    @BindView(R.id.playlist_add)
-    FloatingActionButton playlistAdd;
-    @BindView(R.id.playlist_play)
-    FloatingActionButton playlistPlay;
-    @BindView(R.id.playlist_progress)
-    ProgressBar playlistProgress;
-
     private ArrayList<Song> songs;
-    private ArrayList<Song> recommendedRelaxingSongs;
-    private ArrayList<Song> recommendedActivatingSongs;
-    private PlaylistAdapter adapter;
+    private ArrayList<Song> relaxingSongs;
+    private ArrayList<Song> activatingSongs;
+    private ArrayList<Song> currentSongs;
 
-    private enum PLAYLISTTYPE { PLAYALL, PLAYRELAXING, PLAYACTIVATING }
-
-    private PLAYLISTTYPE playlistType;
+    private int songIndex = 0;
 
     private static boolean doneFeaturizing = false;
+
+    private MediaPlayerService player;
+    boolean serviceBound = false;
+    public static final String Broadcast_PLAY_NEW_AUDIO = "musicretrieval.beatsbear.PlayNewAudio";
+
+    private PlaylistFragment playlistFragment = null;
+    private PlayingFragment playingFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,119 +84,131 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        playlistType = PLAYLISTTYPE.PLAYALL;
-
         songs = new ArrayList<>();
-        recommendedRelaxingSongs = new ArrayList<>();
-        recommendedActivatingSongs = new ArrayList<>();
-        adapter = new PlaylistAdapter(this, songs);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        playlistView.setAdapter(adapter);
-        playlistView.setLayoutManager(layoutManager);
-    }
+        relaxingSongs = new ArrayList<>();
+        activatingSongs = new ArrayList<>();
+        currentSongs = songs;
+     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (songs.isEmpty() || recommendedRelaxingSongs.isEmpty() || recommendedActivatingSongs.isEmpty()) {
+        if (songs.isEmpty())
             new RecommendSongsTask().execute();
+        showPlaylist();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean("ServiceState", serviceBound);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        serviceBound = savedInstanceState.getBoolean("ServiceState");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (serviceBound) {
+            unbindService(serviceConnection);
+            //service is active
+            player.stopSelf();
         }
     }
 
-    public void toggleButtonState(Button button) {
-        switch (button.getId()) {
-            case R.id.main_all_button:
-                button.setBackgroundResource(R.drawable.button_bg_selected);
-                button.setTextColor(Color.WHITE);
-                relaxingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                relaxingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                activatingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                activatingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                playlistType = PLAYLISTTYPE.PLAYALL;
-                break;
-            case R.id.main_relaxing_button:
-                button.setBackgroundResource(R.drawable.button_bg_selected);
-                button.setTextColor(Color.WHITE);
-                allButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                allButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                activatingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                activatingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                playlistType = PLAYLISTTYPE.PLAYRELAXING;
-                break;
-            case R.id.main_activating_button:
-                button.setBackgroundResource(R.drawable.button_bg_selected);
-                button.setTextColor(Color.WHITE);
-                allButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                allButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                relaxingButton.setBackgroundResource(R.drawable.button_bg_not_selected);
-                relaxingButton.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
-                playlistType = PLAYLISTTYPE.PLAYACTIVATING;
-                break;
-        }
+    @Override
+    public void onPlaySongsPressed(int position) {
+        songIndex = position;
+        playAudio(currentSongs);
     }
 
-    @OnClick(R.id.main_all_button)
-    public void startAll() {
-        toggleButtonState(allButton);
-        adapter = new PlaylistAdapter(this, songs);
-        playlistView.setAdapter(adapter);
-        playlistView.getAdapter().notifyDataSetChanged();
-    }
-
-    @OnClick(R.id.main_relaxing_button)
-    public void startRelaxing() {
-        toggleButtonState(relaxingButton);
-        adapter = new PlaylistAdapter(this, recommendedRelaxingSongs);
-        playlistView.setAdapter(adapter);
-        playlistView.getAdapter().notifyDataSetChanged();
-    }
-
-    @OnClick(R.id.main_activating_button)
-    public void startActivating() {
-        toggleButtonState(activatingButton);
-        adapter = new PlaylistAdapter(this, recommendedActivatingSongs);
-        playlistView.setAdapter(adapter);
-        playlistView.getAdapter().notifyDataSetChanged();
-    }
-
-    @OnClick(R.id.playlist_play)
-    public void play() {
-        Intent intent = new Intent(this, Play.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        switch(playlistType) {
+    @Override
+    public void onPlaylistSwitched(PlaylistType type) {
+        switch (type) {
             case PLAYALL:
-                intent.putExtra("PLAY_PLAYLIST", songs);
-                startActivity(intent);
+                currentSongs = songs;
                 break;
             case PLAYRELAXING:
-                intent.putExtra("PLAY_PLAYLIST", recommendedRelaxingSongs);
-                startActivity(intent);
+                currentSongs = relaxingSongs;
                 break;
             case PLAYACTIVATING:
-                intent.putExtra("PLAY_PLAYLIST", recommendedActivatingSongs);
-                startActivity(intent);
+                currentSongs = activatingSongs;
+                break;
+            default:
                 break;
         }
+
+        playlistFragment.switchPlaylist(currentSongs);
     }
 
-    @OnClick(R.id.playlist_add)
-    public void addSong() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("ADDSONG_DIALOG_FRAGMENT");
-        if (prev != null) {
-            ft.remove(prev);
+    @Override
+    public void onPlayPressed() {
+        player.resume();
+    }
+
+    @Override
+    public void onPausePressed() {
+        player.pause();
+    }
+
+    @Override
+    public void onNextPressed() {
+        if (songIndex == songs.size() - 1) {
+            songIndex = 0;
+        } else {
+            ++songIndex;
         }
-        ft.addToBackStack(null);
-
-        // Create and show the dialog.
-        DialogFragment addSong = AddSongDialogFragment.newInstance(songs);
-        addSong.show(ft, "ADDSONG_DIALOG_FRAGMENT");
+        player.next();
+        playingFragment.updateSongInfoUI(currentSongs.get(songIndex));
     }
+
+    @Override
+    public void onPrevPressed() {
+        if (songIndex == 0) {
+            //if first in playlist
+            //set index to the last of audioList
+            songIndex = songs.size() - 1;
+        } else {
+            //get previous in playlist
+            --songIndex;
+        }
+        player.previous();
+        playingFragment.updateSongInfoUI(currentSongs.get(songIndex));
+    }
+
+    @Override
+    public void onTempoPressed(double amount) {
+        player.updateTempo(amount);
+    }
+
+    @Override
+    public void onSeekPressed(long seconds) {
+        player.seek(seconds);
+    }
+
+    //Binding this Client to the AudioPlayer Service
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+            player = binder.getService();
+            serviceBound = true;
+            Toast.makeText(MainActivity.this, "Playing", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
 
     /**
      * Gets all songs
-     * @return a list of songs
      */
     private void getSongs() {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -242,14 +252,14 @@ public class MainActivity extends AppCompatActivity {
             SongFeatures features = song.getFeatures();
 
             boolean relaxing = (features.bpm < Song.RELAXING_THRESHOLD) &&
-                                (features.genre.equals("Blues") ||
-                                features.genre.equals("Classical") ||
-                                features.genre.equals("Country"));
+                    (features.genre.equals("Blues") ||
+                            features.genre.equals("Classical") ||
+                            features.genre.equals("Country"));
 
             if (relaxing) {
-                recommendedRelaxingSongs.add(song);
+                relaxingSongs.add(song);
             } else {
-                recommendedActivatingSongs.add(song);
+                activatingSongs.add(song);
             }
         }
     }
@@ -313,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
 
             dispatcher.run();
         } catch (Exception e) {
-            Log.d(TAG, e.getLocalizedMessage());
+            e.printStackTrace();
         }
 
         // Wait for processing to finish
@@ -373,18 +383,58 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             // Hide progress bar and update adapter when done
             recommendSongs();
-            adapter.notifyDataSetChanged();
-            playlistAdd.setVisibility(View.VISIBLE);
-            playlistPlay.setVisibility(View.VISIBLE);
             playlistProgress.setVisibility(View.GONE);
+            playlistFragment.switchPlaylist(songs);
         }
 
         @Override
         protected void onPreExecute() {
             // Show progress bar while recommending songs
-            playlistAdd.setVisibility(View.GONE);
-            playlistPlay.setVisibility(View.GONE);
             playlistProgress.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void playAudio(ArrayList<Song> songs) {
+        //Check is service is active
+        if (!serviceBound) {
+            //Store Serializable audioList to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudio(songs);
+            storage.storeAudioIndex(songIndex);
+
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
+
+            startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            //Service is active
+            //Send a broadcast to the service -> PLAY_NEW_AUDIO
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudioIndex(songIndex);
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadcastIntent);
+        }
+
+        showController();
+    }
+
+    private void showController() {
+        FragmentManager fm = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+        Song currentSong = currentSongs.get(songIndex);
+
+        playingFragment = PlayingFragment.newInstance(currentSong);
+        ft.add(R.id.fragment_container, playingFragment);
+        ft.addToBackStack("CURRENTLY_PLAYING");
+        ft.commit();
+    }
+
+    private void showPlaylist() {
+        FragmentManager fm = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+
+        playlistFragment = PlaylistFragment.newInstance((ArrayList<Song>) currentSongs.clone());
+        ft.add(R.id.fragment_container, playlistFragment);
+        ft.commit();
     }
 }

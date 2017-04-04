@@ -1,0 +1,126 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.musicretrieval.beatsbear.Activities.PlaylistFragment">
+
+    <LinearLayout
+        android:id="@+id/activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/main_all_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="center|fill"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selected"
+                android:text="@string/main_all"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/main_relaxing_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="center|fill"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_not_selected"
+                android:text="@string/main_relaxing"
+                android:textColor="@color/colorAccent" />
+
+            <Button
+                android:id="@+id/main_activating_button"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="center|fill"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_not_selected"
+                android:text="@string/main_activating"
+                android:textColor="@color/colorAccent" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/activity_song_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
+            tools:context="com.musicretrieval.beatsbear.Activities.Playlist">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/playlist_play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:tint="@android:color/white"
+                app:fabSize="mini"
+                app:srcCompat="@android:drawable/ic_media_play" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/playlist_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="56dp"
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:tint="@android:color/white"
+                app:fabSize="mini"
+                app:srcCompat="@android:drawable/ic_input_add" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/playlist_bpm_title"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="@string/playlist_bpm"
+                        android:textAllCaps="true"
+                        android:textAppearance="@android:style/TextAppearance.Large" />
+
+                    <TextView
+                        android:id="@+id/playlist_song_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:text="@string/playlist_song"
+                        android:textAppearance="@android:style/TextAppearance.Large" />
+                </LinearLayout>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/playlist"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:listitem="@layout/playlistitem" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
