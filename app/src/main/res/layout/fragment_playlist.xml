@@ -67,18 +67,6 @@
                 app:fabSize="mini"
                 app:srcCompat="@android:drawable/ic_media_play" />
 
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/playlist_add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginBottom="56dp"
-                android:layout_marginEnd="8dp"
-                android:clickable="true"
-                android:tint="@android:color/white"
-                app:fabSize="mini"
-                app:srcCompat="@android:drawable/ic_input_add" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

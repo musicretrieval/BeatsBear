@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
 
         final EventList onsetList = new EventList();
 
-        final int SAMPLE_RATE = 44100;
+        final int SAMPLE_RATE = 22050;
         final int buffSize = 1024;
         final int overlap = buffSize/2;
 
@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
             dispatcher.skip(start);
             dispatcher.addAudioProcessor(new StopAudioProcessor(stop));
             // Detect the beat intervals
-            ComplexOnsetDetector c = new ComplexOnsetDetector(buffSize, 0.3, 256.0/SAMPLE_RATE*4.0, -70);
+            ComplexOnsetDetector c = new ComplexOnsetDetector(buffSize, 0.4);
             c.setHandler(new OnsetHandler() {
                 @Override
                 public void handleOnset(double v, double v1) {
@@ -484,13 +484,7 @@ public class MainActivity extends AppCompatActivity implements  PlaylistFragment
         AgentList agents = Induction.beatInduction(onsetList);
         agents.beatTrack(onsetList, -1);
         Agent best = agents.bestAgent();
-        if (best != null) {
-            best.fillBeats(-1.0);
-            features.bpm = (int) ((1.0/best.beatInterval)*60.0);
-        } else {
-            // Arbitrary BPM that isn't 0
-            features.bpm = 60;
-        }
+        features.bpm = (best != null) ? (int) ((1.0/best.beatInterval)*60.0) : 60;
 
         Instance featureVals = new DenseInstance(AudioFeatures.Features.length+1);
         Instances data = new Instances(audioFeaturizer.getDataset());

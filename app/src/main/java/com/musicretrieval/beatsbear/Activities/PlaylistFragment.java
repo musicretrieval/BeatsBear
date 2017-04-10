@@ -33,7 +33,6 @@ public class PlaylistFragment extends Fragment {
     @BindView(R.id.main_activating_button)  Button activatingButton;
 
     @BindView(R.id.playlist)                RecyclerView playlistView;
-    @BindView(R.id.playlist_add)            FloatingActionButton playlistAdd;
     @BindView(R.id.playlist_play)           FloatingActionButton playlistPlay;
 
     private PlaylistAdapter adapter;

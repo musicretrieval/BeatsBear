@@ -16,6 +16,16 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            zipAlignEnabled true
+            debuggable false
+            jniDebuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // We enable ProGuard also for debug builds
+            minifyEnabled true
+
+            // Notice that the default ProGuard file (SDK-provided) differs from the release one
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

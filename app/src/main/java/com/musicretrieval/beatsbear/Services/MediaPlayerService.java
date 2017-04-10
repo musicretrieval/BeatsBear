@@ -45,14 +45,14 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
     public static AudioDispatcher dispatcher;
     private WaveformSimilarityBasedOverlapAdd wsola;
 
-    private int songIndex = -1;
-    private Song currentSong;
+    private static int songIndex = -1;
+    private static Song currentSong;
     private ArrayList<Song> songs;
 
-    private double tempo = 1.0;
-    private long currentTime;
-    private int currentBpm;
-    private boolean playing;
+    private static double tempo = 1.0;
+    private static long currentTime;
+    private static int currentBpm;
+    private static boolean playing;
 
     private final int SAMPLE_RATE = 44100;
 
@@ -266,7 +266,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);
         if (playing && dispatcher != null) {
             stop();
-            play(currentTime);
+            play(0);
         }
     }
 
@@ -290,7 +290,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
         new StorageUtil(getApplicationContext()).storeAudioIndex(songIndex);
         if (playing && dispatcher != null) {
             stop();
-            play(currentTime);
+            play(0);
         }
     }
 
@@ -504,7 +504,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
             updateMetaData();
             buildNotification(PlaybackStatus.PLAYING);
 
-            resume();
+            play(0);
         }
     };
 
