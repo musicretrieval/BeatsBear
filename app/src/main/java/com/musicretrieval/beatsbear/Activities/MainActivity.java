@@ -58,13 +58,7 @@ import weka.core.Instances;
 
 public class MainActivity extends AppCompatActivity implements  PlaylistFragment.OnPlaySongsListener,
                                                                 PlaylistFragment.OnPlaylistSwitchListener,
-                                                                PlayingFragment.OnPlayListener,
-                                                                PlayingFragment.OnNextListener,
-                                                                PlayingFragment.OnPrevListener,
-                                                                PlayingFragment.OnPauseListener,
-                                                                PlayingFragment.OnTempoListener,
-                                                                PlayingFragment.OnSeekListener,
-                                                                PlayingFragment.OnTempoAdjustmentTypeListener,
+                                                                PlayingFragment.PlayFragmentListener,
                                                                 SensorEventListener,
                                                                 StepListener {
 

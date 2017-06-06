@@ -35,13 +35,7 @@ public class PlayingFragment extends Fragment {
 
     private Song song;
 
-    private OnPlayListener playListener;
-    private OnNextListener nextListener;
-    private OnPrevListener prevListener;
-    private OnPauseListener pauseListener;
-    private OnTempoListener tempoListener;
-    private OnSeekListener seekListener;
-    private OnTempoAdjustmentTypeListener tempoAdjustmentTypeListener;
+    private PlayFragmentListener playFragmentListener;
 
     @BindView(R.id.play_manual_tempo)       View manualView;
     @BindView(R.id.play_increase_tempo_btn) Button increaseTempoBtn;
@@ -74,7 +68,7 @@ public class PlayingFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             currentTime = intent.getLongExtra("CURRENT_TIME", 0);
             currentBpm = intent.getIntExtra("CURRENT_BPM", 0);
-            tempo = (currentBpm/ (double) (song.getFeatures().bpm));
+            tempo = (currentBpm / (double) (song.getFeatures().bpm));
             updateTimingUI();
         }
     };
@@ -153,22 +147,22 @@ public class PlayingFragment extends Fragment {
     public void play() {
         songPlayBtn.setVisibility(View.GONE);
         songPauseBtn.setVisibility(View.VISIBLE);
-        if (playListener != null) {
-            playListener.onPlayPressed();
+        if (playFragmentListener != null) {
+            playFragmentListener.onPlayPressed();
         }
     }
 
     @OnClick(R.id.play_forward_btn)
     public void next() {
-        if (nextListener != null) {
-            nextListener.onNextPressed();
+        if (playFragmentListener != null) {
+            playFragmentListener.onNextPressed();
         }
     }
 
     @OnClick(R.id.play_rewind_btn)
     public void previous() {
-        if (prevListener != null) {
-            prevListener.onPrevPressed();
+        if (playFragmentListener != null) {
+            playFragmentListener.onPrevPressed();
         }
     }
 
@@ -176,32 +170,32 @@ public class PlayingFragment extends Fragment {
     public void pause() {
         songPlayBtn.setVisibility(View.VISIBLE);
         songPauseBtn.setVisibility(View.GONE);
-        if (pauseListener != null) {
-            pauseListener.onPausePressed();
+        if (playFragmentListener != null) {
+            playFragmentListener.onPausePressed();
         }
     }
 
     @OnClick(R.id.play_manual_button)
     public void manual() {
         toggleTempoAdjustment(manualTempoBtn);
-        if (tempoAdjustmentTypeListener != null) {
-            tempoAdjustmentTypeListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.MANUAL);
+        if (playFragmentListener != null) {
+            playFragmentListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.MANUAL);
         }
     }
 
     @OnClick(R.id.play_pace_button)
     public void pace() {
         toggleTempoAdjustment(paceTempoBtn);
-        if (tempoAdjustmentTypeListener != null) {
-            tempoAdjustmentTypeListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.PACE);
+        if (playFragmentListener != null) {
+            playFragmentListener.onTempoAdjustmentTypeChanged(TempoAdjustmentType.PACE);
         }
     }
 
     @OnClick(R.id.play_increase_tempo_btn)
     public void increaseTempo() {
-        if (tempoListener != null) {
+        if (playFragmentListener != null) {
             tempo += 0.01;
-            tempoListener.onTempoChanged(tempo);
+            playFragmentListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
             songTempoManual.setText(tempoString);
@@ -210,9 +204,9 @@ public class PlayingFragment extends Fragment {
 
     @OnClick(R.id.play_decrease_tempo_btn)
     public void decreaseTempo() {
-        if (tempoListener != null) {
+        if (playFragmentListener != null) {
             tempo -= 0.01;
-            tempoListener.onTempoChanged(tempo);
+            playFragmentListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
             songTempoManual.setText(tempoString);
@@ -220,9 +214,9 @@ public class PlayingFragment extends Fragment {
     }
 
     public void increaseTempoLong() {
-        if (tempoListener != null) {
+        if (playFragmentListener != null) {
             tempo += 0.05;
-            tempoListener.onTempoChanged(tempo);
+            playFragmentListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
             songTempoManual.setText(tempoString);
@@ -230,9 +224,9 @@ public class PlayingFragment extends Fragment {
     }
 
     public void decreaseTempoLong() {
-        if (tempoListener != null) {
+        if (playFragmentListener != null) {
             tempo -= 0.05;
-            tempoListener.onTempoChanged(tempo);
+            playFragmentListener.onTempoChanged(tempo);
             currentBpm = (int) (song.getFeatures().bpm * tempo);
             String tempoString = String.format(Locale.getDefault(),"%.2fx", tempo);
             songTempoManual.setText(tempoString);
@@ -263,66 +257,18 @@ public class PlayingFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnPlayListener) {
-            playListener = (OnPlayListener) context;
+        if (context instanceof PlayFragmentListener) {
+            playFragmentListener = (PlayFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnPlayListener");
-        }
-
-        if (context instanceof OnNextListener) {
-            nextListener = (OnNextListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnNextListener");
-        }
-
-        if (context instanceof OnPrevListener) {
-            prevListener = (OnPrevListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnPrevListener");
-        }
-
-        if (context instanceof OnPauseListener) {
-            pauseListener = (OnPauseListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnPauseListener");
-        }
-
-        if (context instanceof OnTempoListener) {
-            tempoListener = (OnTempoListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnTempoListener");
-        }
-
-        if (context instanceof OnSeekListener) {
-            seekListener = (OnSeekListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnSeekListener");
-        }
-
-        if (context instanceof OnTempoAdjustmentTypeListener) {
-            tempoAdjustmentTypeListener = (OnTempoAdjustmentTypeListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnTempoAdjustmentTypeListener");
+                    + " must implement PlayFragmentListener");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        playListener = null;
-        nextListener = null;
-        prevListener = null;
-        pauseListener = null;
-        tempoListener = null;
-        seekListener = null;
-        tempoAdjustmentTypeListener = null;
+        playFragmentListener = null;
     }
 
     public void updateSongInfoUI() {
@@ -440,37 +386,19 @@ public class PlayingFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 currentTime = (long) (seekBar.getProgress()/1000.0 * (song.getDuration()/1000.0));
-                seekListener.onSeekPressed(currentTime);
+                playFragmentListener.onSeekPressed(currentTime);
                 updateTimingUI();
             }
         });
     }
 
-    public interface OnPlayListener {
+    public interface PlayFragmentListener {
         void onPlayPressed();
-    }
-
-    public interface OnNextListener {
         void onNextPressed();
-    }
-
-    public interface OnPrevListener {
         void onPrevPressed();
-    }
-
-    public interface OnPauseListener {
         void onPausePressed();
-    }
-
-    public interface OnTempoListener {
         void onTempoChanged(double amount);
-    }
-
-    public interface OnSeekListener {
         void onSeekPressed(long seconds);
-    }
-
-    public interface OnTempoAdjustmentTypeListener {
         void onTempoAdjustmentTypeChanged(TempoAdjustmentType type);
     }
 }
